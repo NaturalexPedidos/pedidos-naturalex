@@ -183,7 +183,6 @@ section h2 {
     background: #218838;
 }
 
-/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -258,7 +257,6 @@ section h2 {
     background: #5568d3;
 }
 
-/* Formulario de Pedido */
 #formularioPedido {
     background: white;
     padding: 30px;
@@ -281,7 +279,6 @@ section h2 {
     resize: vertical;
 }
 
-/* Historial de Pedidos */
 #listaPedidos {
     margin-top: 20px;
 }
