@@ -3,8 +3,8 @@ let supabaseClient;
 
 function inicializarSupabase() {
     const SUPABASE_URL = 'https://ihdvcgculnadvunfeeoo.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloZHZjZ2N1bG5hZHZ1bmZlZW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3MjM1NjcsImV4cCI6MjA1MjI5OTU2N30.Ze-a6yGnl-kR4rK7M5w_cJmDIcJO';
-    
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloZHZjZ2N1bG5hZHZ1bmZlZW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgyNTA1NjIsImV4cCI6MjA4MzgyNjU2Mn0.q35uqSVoMe6GZvIfM56PewiigADle3en9UeHYL4gwyQ';
+
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 }
 
@@ -32,10 +32,10 @@ async function cargarProductos() {
 
         productos = data;
         categorias = [...new Set(productos.map(p => p.categoria))];
-        
+
         renderizarFiltros();
         renderizarProductos(productos);
-        
+
     } catch (error) {
         console.error('Error:', error);
         mostrarMensaje('Error al cargar productos', 'error');
@@ -45,11 +45,11 @@ async function cargarProductos() {
 function renderizarFiltros() {
     const container = document.getElementById('categorias-filter');
     let html = '<button class="filter-btn active" onclick="filterCategoria(null)">Todas</button>';
-    
+
     categorias.forEach((cat, index) => {
         html += '<button class="filter-btn" onclick="filterCategoria(' + index + ')">' + cat + '</button>';
     });
-    
+
     container.innerHTML = html;
 }
 
@@ -57,7 +57,7 @@ function filterCategoria(index) {
     const buttons = document.querySelectorAll('.filter-btn');
     buttons.forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
-    
+
     if (index === null) {
         renderizarProductos(productos);
     } else {
@@ -69,12 +69,12 @@ function filterCategoria(index) {
 
 function renderizarProductos(prods) {
     const grid = document.getElementById('productos-grid');
-    
+
     if (prods.length === 0) {
         grid.innerHTML = '<p style="text-align: center; padding: 40px; grid-column: 1/-1;">No hay productos disponibles</p>';
         return;
     }
-    
+
     let html = '';
     prods.forEach(function(p) {
         html += '<div class="producto-card">';
@@ -84,11 +84,11 @@ function renderizarProductos(prods) {
         html += '<div class="producto-precio">S/ ' + parseFloat(p.precio).toFixed(2) + '</div>';
         html += '<div class="producto-actions">';
         html += '<input type="number" id="cant-' + p.codigo + '" value="1" min="1">';
-        html += '<button onclick="agregarAlCarrito(\'' + p.codigo + '\')">Agregar</button>';
+        html += '<button onclick="agregarAlCarrito(\'\'' + p.codigo + '\'\')">Agregar</button>';
         html += '</div>';
         html += '</div>';
     });
-    
+
     grid.innerHTML = html;
 }
 
@@ -96,9 +96,9 @@ function agregarAlCarrito(codigo) {
     const producto = productos.find(p => p.codigo === codigo);
     const cantidadInput = document.getElementById('cant-' + codigo);
     const cantidad = parseInt(cantidadInput.value) || 1;
-    
+
     const existente = carrito.find(item => item.codigo === codigo);
-    
+
     if (existente) {
         existente.cantidad += cantidad;
     } else {
@@ -109,7 +109,7 @@ function agregarAlCarrito(codigo) {
             cantidad: cantidad
         });
     }
-    
+
     actualizarCarrito();
     mostrarMensaje('Producto agregado al carrito', 'exito');
 }
@@ -117,15 +117,15 @@ function agregarAlCarrito(codigo) {
 function actualizarCarrito() {
     const cartCount = document.getElementById('cart-count');
     const cartItems = document.getElementById('cart-items');
-    
+
     const totalItems = carrito.reduce((sum, item) => sum + item.cantidad, 0);
     cartCount.textContent = totalItems;
-    
+
     if (carrito.length === 0) {
         cartItems.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">El carrito está vacío</p>';
         return;
     }
-    
+
     let html = '';
     carrito.forEach(function(item, index) {
         html += '<div class="cart-item">';
@@ -137,7 +137,7 @@ function actualizarCarrito() {
         html += '<button class="remove-item" onclick="removerDelCarrito(' + index + ')">✕</button>';
         html += '</div>';
     });
-    
+
     cartItems.innerHTML = html;
 }
 
@@ -156,7 +156,7 @@ function showCheckout() {
         mostrarMensaje('El carrito está vacío', 'error');
         return;
     }
-    
+
     document.getElementById('productos-section').style.display = 'none';
     document.getElementById('checkout-section').style.display = 'block';
     toggleCart();
@@ -172,7 +172,7 @@ function toggleDiasCredito() {
     const formaPago = document.getElementById('forma_pago').value;
     const diasGroup = document.getElementById('dias_credito_group');
     const diasSelect = document.getElementById('dias_credito');
-    
+
     if (formaPago === 'Crédito') {
         diasGroup.style.display = 'block';
         diasSelect.required = true;
@@ -185,12 +185,12 @@ function toggleDiasCredito() {
 
 document.getElementById('pedido-form').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     if (carrito.length === 0) {
         mostrarMensaje('El carrito está vacío', 'error');
         return;
     }
-    
+
     try {
         const pedidoData = {
             nombre_cliente: document.getElementById('nombre_cliente').value,
@@ -206,16 +206,16 @@ document.getElementById('pedido-form').addEventListener('submit', async function
             forma_pago: document.getElementById('forma_pago').value,
             dias_credito: document.getElementById('dias_credito').value ? parseInt(document.getElementById('dias_credito').value) : null
         };
-        
+
         const { data: pedido, error: errorPedido } = await supabaseClient
             .from('pedidos')
             .insert([pedidoData])
             .select();
-        
+
         if (errorPedido) throw errorPedido;
-        
+
         const pedidoId = pedido[0].id;
-        
+
         const items = carrito.map(function(item) {
             return {
                 pedido_id: pedidoId,
@@ -224,23 +224,23 @@ document.getElementById('pedido-form').addEventListener('submit', async function
                 precio_unitario: item.precio
             };
         });
-        
+
         const { error: errorItems } = await supabaseClient
             .from('pedido_items')
             .insert(items);
-        
+
         if (errorItems) throw errorItems;
-        
+
         mostrarMensaje('¡Pedido enviado exitosamente! Pedido #' + pedidoId, 'exito');
-        
+
         document.getElementById('pedido-form').reset();
         carrito = [];
         actualizarCarrito();
-        
+
         setTimeout(function() {
             backToProducts();
         }, 3000);
-        
+
     } catch (error) {
         console.error('Error:', error);
         mostrarMensaje('Error al enviar el pedido: ' + error.message, 'error');
@@ -251,7 +251,7 @@ function mostrarMensaje(texto, tipo) {
     const mensaje = document.getElementById('mensaje');
     mensaje.textContent = texto;
     mensaje.className = 'mensaje ' + tipo;
-    
+
     setTimeout(function() {
         mensaje.className = 'mensaje';
     }, 5000);
