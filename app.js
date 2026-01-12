@@ -33,8 +33,7 @@ async function cargarProductos() {
         productos = data;
         categorias = [...new Set(productos.map(p => p.categoria))];
 
-        renderizarFiltros();
-        renderizarProductos(productos);
+        renderizarCategoriasGrid();
 
     } catch (error) {
         console.error('Error:', error);
@@ -42,49 +41,54 @@ async function cargarProductos() {
     }
 }
 
-function renderizarFiltros() {
-    const container = document.getElementById('categorias-filter');
+function renderizarCategoriasGrid() {
+    const container = document.getElementById('categorias-grid');
     
     const iconos = {
         'CONCENTRADOS': '🧪',
         'CAPSULAS': '💊',
         'LSF': '☀️',
         'Dr. Willphar': '⚕️',
+        'DR WILLPHAR': '⚕️',
         'COLAGENOS': '💊',
         'Nutricionales': '🥤',
         'Jarabes': '🍯',
+        'JARABES': '🍯',
         'Productos El Mana': '🌿',
         'ESPECIALIDADES': '⭐',
-        'ESPECIALIDADES BOTICAS NATURISTAS': '🌟',
-        'EXTRACTO DE MORINGA CON CAMÚ CAMU': '🌿',
-        'EXTRACTO DE HEPALAB - AGRACEJO, BOLDO, COLA DE CABALLO Y CAMÚ CAMU': '🍃',
-        'JARABES': '🍯',
-        'DR WILLPHAR': '⚕️'
+        'ESPECIALIDADES BOTICAS NATURISTAS': '🌟'
     };
     
-    let html = '<button class="filter-chip active" onclick="filterCategoria(null)">📋 Todas</button>';
-
+    let html = '';
     categorias.forEach((cat, index) => {
         const icono = iconos[cat] || '📦';
-        const nombreCorto = cat.length > 25 ? cat.substring(0, 25) + '...' : cat;
-        html += '<button class="filter-chip" onclick="filterCategoria(' + index + ')" title="' + cat + '">' + icono + ' ' + nombreCorto + '</button>';
+        const count = productos.filter(p => p.categoria === cat).length;
+        const nombreCorto = cat.length > 30 ? cat.substring(0, 30) + '...' : cat;
+        
+        html += '<div class="categoria-card" onclick="seleccionarCategoria(' + index + ')">';
+        html += '<div class="categoria-icon">' + icono + '</div>';
+        html += '<h3 class="categoria-nombre">' + nombreCorto + '</h3>';
+        html += '<p class="categoria-count">' + count + ' productos</p>';
+        html += '</div>';
     });
 
     container.innerHTML = html;
 }
 
-function filterCategoria(index) {
-    const buttons = document.querySelectorAll('.filter-chip');
-    buttons.forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+function seleccionarCategoria(index) {
+    const categoria = categorias[index];
+    const filtrados = productos.filter(p => p.categoria === categoria);
+    
+    document.getElementById('categorias-grid').style.display = 'none';
+    document.getElementById('productos-container').style.display = 'block';
+    document.getElementById('categoria-titulo').textContent = categoria;
+    
+    renderizarProductos(filtrados);
+}
 
-    if (index === null) {
-        renderizarProductos(productos);
-    } else {
-        const categoria = categorias[index];
-        const filtrados = productos.filter(p => p.categoria === categoria);
-        renderizarProductos(filtrados);
-    }
+function volverCategorias() {
+    document.getElementById('categorias-grid').style.display = 'grid';
+    document.getElementById('productos-container').style.display = 'none';
 }
 
 function renderizarProductos(prods) {
@@ -98,7 +102,6 @@ function renderizarProductos(prods) {
     let html = '';
     prods.forEach(function(p) {
         html += '<div class="producto-card">';
-        html += '<div class="producto-categoria">' + p.categoria + '</div>';
         html += '<div class="producto-nombre">' + p.nombre + '</div>';
         html += '<div class="producto-presentacion">Presentación: ' + p.presentacion + '</div>';
         html += '<div class="producto-precio">S/ ' + parseFloat(p.precio).toFixed(2) + '</div>';
