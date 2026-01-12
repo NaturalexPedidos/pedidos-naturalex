@@ -1,7 +1,8 @@
-// Configuración de Supabase
-const SUPABASE_URL = 'TU_URL_DE_SUPABASE';
-const SUPABASE_KEY = 'TU_ANON_KEY_DE_SUPABASE';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Configuración de Supabase - SOLO UNA VEZ
+const SUPABASE_URL = 'https://jfstdpxihkivyxbjzayy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmc3RkcHhpaGtpdnl4Ymp6YXl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3MjgwMzMsImV4cCI6MjA1MjMwNDAzM30.6jrB7WYfQQtxFkZXvBLYZOWvvNOe-LIlrKN1gAQPFe0';
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Variables globales
 let productos = [];
@@ -27,7 +28,7 @@ cargarPedidos();
 // Función para cargar productos desde Supabase
 async function cargarProductos() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('productos')
             .select('*')
             .order('nombre', { ascending: true });
@@ -44,14 +45,12 @@ async function cargarProductos() {
 
 // Mostrar categorías
 function mostrarCategorias() {
-    // Guardar en historial del navegador
     history.pushState({ vista: 'categorias' }, '', '#categorias');
     
     seccionInicio.style.display = 'none';
     seccionCategorias.style.display = 'block';
     seccionProductos.style.display = 'none';
 
-    // Obtener categorías únicas
     const categorias = [...new Set(productos.map(p => p.presentacion))];
     
     let html = '';
@@ -72,8 +71,7 @@ function mostrarCategorias() {
 function verProductos(cat) {
     categoriaActual = cat;
     
-    // Guardar en historial del navegador
-    history.pushState({ vista: 'productos', categoria: cat }, '', `#productos/${cat}`);
+    history.pushState({ vista: 'productos', categoria: cat }, '', '#productos/' + cat);
     
     seccionCategorias.style.display = 'none';
     seccionProductos.style.display = 'block';
@@ -82,6 +80,11 @@ function verProductos(cat) {
     
     const productosFiltrados = productos.filter(p => p.presentacion === cat);
     renderizarProductos(productosFiltrados);
+}
+
+// Volver a categorías
+function volverACategorias() {
+    history.back();
 }
 
 // Renderizar productos
@@ -105,7 +108,7 @@ function agregarAlCarrito(codigo) {
     const producto = productos.find(p => p.codigo === codigo);
     
     if (!producto) {
-        console.error('Producto no encontrado. Código buscado:', codigo);
+        console.error('Producto no encontrado. Código:', codigo);
         alert('Error: Producto no encontrado');
         return;
     }
@@ -124,7 +127,7 @@ function agregarAlCarrito(codigo) {
     }
 
     actualizarCarrito();
-    alert(`✅ ${producto.nombre} agregado al carrito`);
+    alert('✅ ' + producto.nombre + ' agregado al carrito');
 }
 
 // Actualizar carrito
@@ -187,7 +190,7 @@ function cancelarPedido() {
 }
 
 // Hacer pedido
-document.getElementById('formDatosPedido').addEventListener('submit', async (e) => {
+document.getElementById('formDatosPedido').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const cliente = document.getElementById('inputCliente').value;
@@ -198,15 +201,14 @@ document.getElementById('formDatosPedido').addEventListener('submit', async (e) 
     const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
 
     try {
-        // Insertar pedido
-        const { data: pedido, error: errorPedido } = await supabase
+        const { data: pedido, error: errorPedido } = await supabaseClient
             .from('pedidos')
             .insert([{
-                cliente,
-                email,
-                telefono,
-                direccion,
-                total,
+                cliente: cliente,
+                email: email,
+                telefono: telefono,
+                direccion: direccion,
+                total: total,
                 estado: 'Pendiente'
             }])
             .select()
@@ -214,7 +216,6 @@ document.getElementById('formDatosPedido').addEventListener('submit', async (e) 
 
         if (errorPedido) throw errorPedido;
 
-        // Insertar items del pedido
         const items = carrito.map(item => ({
             pedido_id: pedido.id,
             codigo: item.codigo,
@@ -223,7 +224,7 @@ document.getElementById('formDatosPedido').addEventListener('submit', async (e) 
             precio: item.precio
         }));
 
-        const { error: errorItems } = await supabase
+        const { error: errorItems } = await supabaseClient
             .from('pedido_items')
             .insert(items);
 
@@ -231,10 +232,8 @@ document.getElementById('formDatosPedido').addEventListener('submit', async (e) 
 
         alert('✅ Pedido realizado con éxito. ID: ' + pedido.id);
 
-        // Descargar Excel del pedido
         await exportarPedidoActual(pedido.id);
 
-        // Limpiar
         carrito = [];
         actualizarCarrito();
         formularioPedido.style.display = 'none';
@@ -250,7 +249,7 @@ document.getElementById('formDatosPedido').addEventListener('submit', async (e) 
 // Cargar historial de pedidos
 async function cargarPedidos() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('pedidos')
             .select('*')
             .order('created_at', { ascending: false })
@@ -264,7 +263,7 @@ async function cargarPedidos() {
             html = '<p>No hay pedidos registrados</p>';
         } else {
             for (const pedido of data) {
-                const { data: items } = await supabase
+                const { data: items } = await supabaseClient
                     .from('pedido_items')
                     .select('*')
                     .eq('pedido_id', pedido.id);
@@ -282,7 +281,7 @@ async function cargarPedidos() {
                         <div class="pedido-items">
                             <strong>Productos:</strong>
                             <ul>
-                                ${items.map(i => `<li>${i.nombre} x${i.cantidad} - S/ ${(i.precio * i.cantidad).toFixed(2)}</li>`).join('')}
+                                ${items.map(i => '<li>' + i.nombre + ' x' + i.cantidad + ' - S/ ' + (i.precio * i.cantidad).toFixed(2) + '</li>').join('')}
                             </ul>
                         </div>
                     </div>
@@ -299,7 +298,7 @@ async function cargarPedidos() {
 // Exportar TODOS los pedidos a Excel
 async function exportarPedidosExcel() {
     try {
-        const { data: pedidos, error: errorPedidos } = await supabase
+        const { data: pedidos, error: errorPedidos } = await supabaseClient
             .from('pedidos')
             .select('*')
             .order('created_at', { ascending: false });
@@ -314,7 +313,7 @@ async function exportarPedidosExcel() {
         const datosExcel = [];
         
         for (const pedido of pedidos) {
-            const { data: detalles } = await supabase
+            const { data: detalles } = await supabaseClient
                 .from('pedido_items')
                 .select('*')
                 .eq('pedido_id', pedido.id);
@@ -328,7 +327,7 @@ async function exportarPedidosExcel() {
                 'Total': pedido.total.toFixed(2),
                 'Estado': pedido.estado || 'Pendiente',
                 'Fecha': new Date(pedido.created_at).toLocaleString('es-PE'),
-                'Productos': detalles.map(d => `${d.nombre} (x${d.cantidad})`).join(' | '),
+                'Productos': detalles.map(d => d.nombre + ' (x' + d.cantidad + ')').join(' | '),
                 'Cantidad Artículos': detalles.length
             });
         }
@@ -343,7 +342,7 @@ async function exportarPedidosExcel() {
             { wch: 50 }, { wch: 15 }
         ];
 
-        const nombreArchivo = `Pedidos_NATURALEX_${new Date().toISOString().split('T')[0]}.xlsx`;
+        const nombreArchivo = 'Pedidos_NATURALEX_' + new Date().toISOString().split('T')[0] + '.xlsx';
         XLSX.writeFile(wb, nombreArchivo);
 
         alert('✅ Reporte descargado correctamente');
@@ -353,16 +352,16 @@ async function exportarPedidosExcel() {
     }
 }
 
-// Exportar pedido individual a Excel (se llama automáticamente al hacer pedido)
+// Exportar pedido individual
 async function exportarPedidoActual(pedidoId) {
     try {
-        const { data: pedido } = await supabase
+        const { data: pedido } = await supabaseClient
             .from('pedidos')
             .select('*')
             .eq('id', pedidoId)
             .single();
 
-        const { data: detalles } = await supabase
+        const { data: detalles } = await supabaseClient
             .from('pedido_items')
             .select('*')
             .eq('pedido_id', pedidoId);
@@ -387,13 +386,13 @@ async function exportarPedidoActual(pedidoId) {
             datos.push([
                 item.nombre,
                 item.cantidad,
-                `S/ ${item.precio.toFixed(2)}`,
-                `S/ ${subtotal.toFixed(2)}`
+                'S/ ' + item.precio.toFixed(2),
+                'S/ ' + subtotal.toFixed(2)
             ]);
         });
 
         datos.push([]);
-        datos.push(['', '', 'TOTAL A PAGAR:', `S/ ${pedido.total.toFixed(2)}`]);
+        datos.push(['', '', 'TOTAL A PAGAR:', 'S/ ' + pedido.total.toFixed(2)]);
 
         const ws = XLSX.utils.aoa_to_sheet(datos);
         const wb = XLSX.utils.book_new();
@@ -401,7 +400,7 @@ async function exportarPedidoActual(pedidoId) {
 
         ws['!cols'] = [{ wch: 35 }, { wch: 12 }, { wch: 15 }, { wch: 15 }];
 
-        const nombreArchivo = `Pedido_${pedido.id}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        const nombreArchivo = 'Pedido_' + pedido.id + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
         XLSX.writeFile(wb, nombreArchivo);
 
     } catch (error) {
@@ -409,8 +408,8 @@ async function exportarPedidoActual(pedidoId) {
     }
 }
 
-// Manejar navegación con botones Atrás/Adelante del navegador
-window.addEventListener('popstate', (event) => {
+// Manejar navegación con botones del navegador
+window.addEventListener('popstate', function(event) {
     if (event.state) {
         if (event.state.vista === 'categorias') {
             seccionInicio.style.display = 'none';
