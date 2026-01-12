@@ -2,7 +2,8 @@
 const SUPABASE_URL = 'https://ihdvcgculnadvunfeeoo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloZHZjZ2N1bG5hZHZ1bmZlZW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3MjM1NjcsImV4cCI6MjA1MjI5OTU2N30.Ze-a6yGnl-kR4rK7M5w_cJmDIcJO';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Variables globales
 let productos = [];
@@ -17,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Cargar productos desde Supabase
 async function cargarProductos() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('productos')
             .select('*')
             .order('categoria', { ascending: true });
@@ -44,10 +45,11 @@ async function cargarProductos() {
 // Renderizar filtros de categorías
 function renderizarFiltros() {
     const container = document.getElementById('categorias-filter');
-    let html = '<button class="filter-btn active" onclick="filterCategoria(\'todas\')">Todas</button>';
+    let html = '<button class="filter-btn active" onclick="filterCategoria('todas')">Todas</button>';
 
     categorias.forEach(cat => {
-        html += `<button class="filter-btn" onclick="filterCategoria('${cat}')">${cat}</button>`;
+        const catSafe = cat.replace(/'/g, "\\'");
+        html += `<button class="filter-btn" onclick="filterCategoria('${catSafe}')">${cat}</button>`;
     });
 
     container.innerHTML = html;
@@ -75,7 +77,7 @@ function renderizarProductos(prods) {
     const grid = document.getElementById('productos-grid');
 
     if (prods.length === 0) {
-        grid.innerHTML = '<p>No hay productos disponibles</p>';
+        grid.innerHTML = '<p style="text-align: center; padding: 40px;">No hay productos disponibles</p>';
         return;
     }
 
@@ -84,7 +86,7 @@ function renderizarProductos(prods) {
             <div class="producto-categoria">${p.categoria}</div>
             <div class="producto-nombre">${p.nombre}</div>
             <div class="producto-presentacion">Presentación: ${p.presentacion}</div>
-            <div class="producto-precio">S/ ${p.precio.toFixed(2)}</div>
+            <div class="producto-precio">S/ ${parseFloat(p.precio).toFixed(2)}</div>
             <div class="producto-actions">
                 <input type="number" id="cant-${p.codigo}" value="1" min="1">
                 <button onclick="agregarAlCarrito('${p.codigo}')">Agregar</button>
@@ -108,7 +110,7 @@ function agregarAlCarrito(codigo) {
         carrito.push({
             codigo: producto.codigo,
             nombre: producto.nombre,
-            precio: producto.precio,
+            precio: parseFloat(producto.precio),
             cantidad: cantidad
         });
     }
@@ -125,7 +127,7 @@ function actualizarCarrito() {
     cartCount.textContent = carrito.reduce((sum, item) => sum + item.cantidad, 0);
 
     if (carrito.length === 0) {
-        cartItems.innerHTML = '<p style="text-align: center; color: #999;">El carrito está vacío</p>';
+        cartItems.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">El carrito está vacío</p>';
         return;
     }
 
@@ -215,7 +217,7 @@ document.getElementById('pedido-form').addEventListener('submit', async (e) => {
         };
 
         // Insertar pedido
-        const { data: pedido, error: errorPedido } = await supabase
+        const { data: pedido, error: errorPedido } = await supabaseClient
             .from('pedidos')
             .insert([pedidoData])
             .select();
@@ -232,7 +234,7 @@ document.getElementById('pedido-form').addEventListener('submit', async (e) => {
             precio_unitario: item.precio
         }));
 
-        const { error: errorItems } = await supabase
+        const { error: errorItems } = await supabaseClient
             .from('pedido_items')
             .insert(items);
 
