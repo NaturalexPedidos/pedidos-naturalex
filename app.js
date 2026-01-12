@@ -107,7 +107,7 @@ function renderizarProductos(prods) {
         html += '<div class="producto-precio">S/ ' + parseFloat(p.precio).toFixed(2) + '</div>';
         html += '<div class="producto-actions">';
         html += '<input type="number" id="cant-' + p.codigo + '" value="1" min="1">';
-        html += '<button onclick="agregarAlCarrito(' + p.codigo + ')">Agregar</button>';
+        html += '<button onclick="agregarAlCarrito(\'' + p.codigo + '\')">Agregar</button>';
         html += '</div>';
         html += '</div>';
     });
