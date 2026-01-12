@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Pedidos - NATURALEX</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>🌿 NATURALEX - Sistema de Pedidos</h1>
+            <div class="cart-icon" onclick="toggleCart()">
+                🛒 Carrito (<span id="cart-count">0</span>)
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Sección de Productos -->
+        <section id="productos-section">
+            <h2>Catálogo de Productos</h2>
+            <div id="categorias-filter">
+                <button class="filter-btn active" onclick="filterCategoria('todas')">Todas</button>
+            </div>
+            <div id="productos-grid"></div>
+        </section>
+
+        <!-- Carrito Lateral -->
+        <aside id="cart-sidebar" class="cart-sidebar">
+            <div class="cart-header">
+                <h3>Carrito de Compras</h3>
+                <button class="close-btn" onclick="toggleCart()">✕</button>
+            </div>
+            <div id="cart-items"></div>
+            <div class="cart-footer">
+                <button class="btn-primary" onclick="showCheckout()">Proceder al Pedido</button>
+            </div>
+        </aside>
+
+        <!-- Formulario de Pedido -->
+        <section id="checkout-section" style="display: none;">
+            <h2>Datos del Pedido</h2>
+            <form id="pedido-form">
+                <div class="form-section">
+                    <h3>Información del Cliente</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombre_cliente">Nombre Completo *</label>
+                            <input type="text" id="nombre_cliente" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="nombre_botica">Nombre de la Botica (Opcional)</label>
+                            <input type="text" id="nombre_botica">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dni_ruc">DNI o RUC *</label>
+                            <input type="text" id="dni_ruc" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="telefono">Teléfono *</label>
+                            <input type="tel" id="telefono" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" required>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Ubicación</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="departamento">Departamento *</label>
+                            <input type="text" id="departamento" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="provincia">Provincia *</label>
+                            <input type="text" id="provincia" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="distrito">Distrito *</label>
+                            <input type="text" id="distrito" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="direccion">Dirección / Referencia *</label>
+                            <input type="text" id="direccion" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3>Información de Pago</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tipo_comprobante">Tipo de Comprobante *</label>
+                            <select id="tipo_comprobante" required>
+                                <option value="">Seleccione...</option>
+                                <option value="Factura">Factura</option>
+                                <option value="Boleta">Boleta</option>
+                                <option value="Nota de Pedido">Nota de Pedido</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="forma_pago">Forma de Pago *</label>
+                            <select id="forma_pago" required onchange="toggleDiasCredito()">
+                                <option value="">Seleccione...</option>
+                                <option value="Contado">Contado</option>
+                                <option value="Crédito">Crédito</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" id="dias_credito_group" style="display: none;">
+                        <label for="dias_credito">Días de Crédito *</label>
+                        <select id="dias_credito">
+                            <option value="">Seleccione...</option>
+                            <option value="10">10 días</option>
+                            <option value="15">15 días</option>
+                            <option value="20">20 días</option>
+                            <option value="25">25 días</option>
+                            <option value="30">30 días</option>
+                            <option value="40">40 días</option>
+                            <option value="60">60 días</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="backToProducts()">Volver al Catálogo</button>
+                    <button type="submit" class="btn-primary">Enviar Pedido</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Mensaje de Confirmación -->
+        <div id="mensaje" class="mensaje"></div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 NATURALEX - Sistema de Pedidos</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
