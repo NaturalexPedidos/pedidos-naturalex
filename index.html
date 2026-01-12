@@ -7,34 +7,39 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <div class="container">
+    <header class="header">
+        <div class="header-content">
             <h1>🌿 NATURALEX - Sistema de Pedidos</h1>
-            <div class="cart-icon" onclick="toggleCart()">
+            <button class="cart-button" onclick="toggleCart()">
                 🛒 Carrito (<span id="cart-count">0</span>)
-            </div>
+            </button>
         </div>
     </header>
 
     <main class="container">
         <!-- Sección de Productos -->
         <section id="productos-section">
-            <h2>Catálogo de Productos</h2>
-            <div id="categorias-filter">
-                <button class="filter-btn active" onclick="filterCategoria('todas')">Todas</button>
+            <h2 style="text-align: center; margin-bottom: 30px; color: #333;">Selecciona una Categoría</h2>
+            <div id="categorias-grid"></div>
+            
+            <div id="productos-container" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 id="categoria-titulo" style="color: #667eea; font-size: 24px;"></h3>
+                    <button class="btn-volver" onclick="volverCategorias()">← Volver a Categorías</button>
+                </div>
+                <div id="productos-grid"></div>
             </div>
-            <div id="productos-grid"></div>
         </section>
 
         <!-- Carrito Lateral -->
-        <aside id="cart-sidebar" class="cart-sidebar">
+        <aside id="cart-sidebar">
             <div class="cart-header">
-                <h3>Carrito de Compras</h3>
-                <button class="close-btn" onclick="toggleCart()">✕</button>
+                <h2>Carrito de Compras</h2>
+                <button class="close-cart" onclick="toggleCart()">✕</button>
             </div>
             <div id="cart-items"></div>
             <div class="cart-footer">
-                <button class="btn-primary" onclick="showCheckout()">Proceder al Pedido</button>
+                <button class="checkout-btn" onclick="showCheckout()">Proceder al Pedido</button>
             </div>
         </aside>
 
@@ -142,7 +147,9 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 NATURALEX - Sistema de Pedidos</p>
+        <div class="container">
+            <p>&copy; 2026 NATURALEX - Sistema de Pedidos</p>
+        </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
