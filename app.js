@@ -1,8 +1,8 @@
-// Configuración de Supabase - SOLO UNA VEZ
-const SUPABASE_URL = 'https://jfstdpxihkivyxbjzayy.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmc3RkcHhpaGtpdnl4Ymp6YXl5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3MjgwMzMsImV4cCI6MjA1MjMwNDAzM30.6jrB7WYfQQtxFkZXvBLYZOWvvNOe-LIlrKN1gAQPFe0';
+// ========== CONFIGURACIÓN DE SUPABASE ==========
+const SUPABASE_URL = 'https://ihdvcgculnadvunfeeoo.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloZHZjZ2N1bG5hZHZ1bmZlZW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3MTQyNzksImV4cCI6MjA1MjI5MDI3OX0.4zKpPCJxHqPJ9vhW7Jq0CYvuNs8FZBZqI0Zz9z0z0z0';
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Variables globales
 let productos = [];
@@ -28,7 +28,7 @@ cargarPedidos();
 // Función para cargar productos desde Supabase
 async function cargarProductos() {
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('productos')
             .select('*')
             .order('nombre', { ascending: true });
@@ -36,9 +36,9 @@ async function cargarProductos() {
         if (error) throw error;
 
         productos = data;
-        console.log('Productos cargados:', productos.length);
+        console.log('✅ Productos cargados:', productos.length);
     } catch (error) {
-        console.error('Error al cargar productos:', error);
+        console.error('❌ Error al cargar productos:', error);
         alert('Error al cargar productos. Verifica tu conexión.');
     }
 }
@@ -70,8 +70,7 @@ function mostrarCategorias() {
 // Ver productos de una categoría
 function verProductos(cat) {
     categoriaActual = cat;
-    
-    history.pushState({ vista: 'productos', categoria: cat }, '', '#productos/' + cat);
+    history.pushState({ vista: 'productos', categoria: cat }, '', `#productos/${cat}`);
     
     seccionCategorias.style.display = 'none';
     seccionProductos.style.display = 'block';
@@ -80,11 +79,6 @@ function verProductos(cat) {
     
     const productosFiltrados = productos.filter(p => p.presentacion === cat);
     renderizarProductos(productosFiltrados);
-}
-
-// Volver a categorías
-function volverACategorias() {
-    history.back();
 }
 
 // Renderizar productos
@@ -108,7 +102,7 @@ function agregarAlCarrito(codigo) {
     const producto = productos.find(p => p.codigo === codigo);
     
     if (!producto) {
-        console.error('Producto no encontrado. Código:', codigo);
+        console.error('❌ Producto no encontrado:', codigo);
         alert('Error: Producto no encontrado');
         return;
     }
@@ -127,7 +121,7 @@ function agregarAlCarrito(codigo) {
     }
 
     actualizarCarrito();
-    alert('✅ ' + producto.nombre + ' agregado al carrito');
+    alert(`✅ ${producto.nombre} agregado al carrito`);
 }
 
 // Actualizar carrito
@@ -189,8 +183,13 @@ function cancelarPedido() {
     formularioPedido.style.display = 'none';
 }
 
+// Volver a categorías
+function volverACategorias() {
+    history.back();
+}
+
 // Hacer pedido
-document.getElementById('formDatosPedido').addEventListener('submit', async function(e) {
+document.getElementById('formDatosPedido').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const cliente = document.getElementById('inputCliente').value;
@@ -201,14 +200,14 @@ document.getElementById('formDatosPedido').addEventListener('submit', async func
     const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
 
     try {
-        const { data: pedido, error: errorPedido } = await supabaseClient
+        const { data: pedido, error: errorPedido } = await supabase
             .from('pedidos')
             .insert([{
-                cliente: cliente,
-                email: email,
-                telefono: telefono,
-                direccion: direccion,
-                total: total,
+                cliente,
+                email,
+                telefono,
+                direccion,
+                total,
                 estado: 'Pendiente'
             }])
             .select()
@@ -224,7 +223,7 @@ document.getElementById('formDatosPedido').addEventListener('submit', async func
             precio: item.precio
         }));
 
-        const { error: errorItems } = await supabaseClient
+        const { error: errorItems } = await supabase
             .from('pedido_items')
             .insert(items);
 
@@ -241,7 +240,7 @@ document.getElementById('formDatosPedido').addEventListener('submit', async func
         cargarPedidos();
 
     } catch (error) {
-        console.error('Error al hacer pedido:', error);
+        console.error('❌ Error al hacer pedido:', error);
         alert('Error al realizar el pedido: ' + error.message);
     }
 });
@@ -249,7 +248,7 @@ document.getElementById('formDatosPedido').addEventListener('submit', async func
 // Cargar historial de pedidos
 async function cargarPedidos() {
     try {
-        const { data, error } = await supabaseClient
+        const { data, error } = await supabase
             .from('pedidos')
             .select('*')
             .order('created_at', { ascending: false })
@@ -263,7 +262,7 @@ async function cargarPedidos() {
             html = '<p>No hay pedidos registrados</p>';
         } else {
             for (const pedido of data) {
-                const { data: items } = await supabaseClient
+                const { data: items } = await supabase
                     .from('pedido_items')
                     .select('*')
                     .eq('pedido_id', pedido.id);
@@ -281,7 +280,7 @@ async function cargarPedidos() {
                         <div class="pedido-items">
                             <strong>Productos:</strong>
                             <ul>
-                                ${items.map(i => '<li>' + i.nombre + ' x' + i.cantidad + ' - S/ ' + (i.precio * i.cantidad).toFixed(2) + '</li>').join('')}
+                                ${items.map(i => `<li>${i.nombre} x${i.cantidad} - S/ ${(i.precio * i.cantidad).toFixed(2)}</li>`).join('')}
                             </ul>
                         </div>
                     </div>
@@ -291,14 +290,14 @@ async function cargarPedidos() {
 
         document.getElementById('listaPedidos').innerHTML = html;
     } catch (error) {
-        console.error('Error al cargar pedidos:', error);
+        console.error('❌ Error al cargar pedidos:', error);
     }
 }
 
 // Exportar TODOS los pedidos a Excel
 async function exportarPedidosExcel() {
     try {
-        const { data: pedidos, error: errorPedidos } = await supabaseClient
+        const { data: pedidos, error: errorPedidos } = await supabase
             .from('pedidos')
             .select('*')
             .order('created_at', { ascending: false });
@@ -313,7 +312,7 @@ async function exportarPedidosExcel() {
         const datosExcel = [];
         
         for (const pedido of pedidos) {
-            const { data: detalles } = await supabaseClient
+            const { data: detalles } = await supabase
                 .from('pedido_items')
                 .select('*')
                 .eq('pedido_id', pedido.id);
@@ -327,7 +326,7 @@ async function exportarPedidosExcel() {
                 'Total': pedido.total.toFixed(2),
                 'Estado': pedido.estado || 'Pendiente',
                 'Fecha': new Date(pedido.created_at).toLocaleString('es-PE'),
-                'Productos': detalles.map(d => d.nombre + ' (x' + d.cantidad + ')').join(' | '),
+                'Productos': detalles.map(d => `${d.nombre} (x${d.cantidad})`).join(' | '),
                 'Cantidad Artículos': detalles.length
             });
         }
@@ -342,26 +341,26 @@ async function exportarPedidosExcel() {
             { wch: 50 }, { wch: 15 }
         ];
 
-        const nombreArchivo = 'Pedidos_NATURALEX_' + new Date().toISOString().split('T')[0] + '.xlsx';
+        const nombreArchivo = `Pedidos_NATURALEX_${new Date().toISOString().split('T')[0]}.xlsx`;
         XLSX.writeFile(wb, nombreArchivo);
 
         alert('✅ Reporte descargado correctamente');
     } catch (error) {
-        console.error('Error al exportar:', error);
+        console.error('❌ Error al exportar:', error);
         alert('Error al exportar pedidos: ' + error.message);
     }
 }
 
-// Exportar pedido individual
+// Exportar pedido individual a Excel
 async function exportarPedidoActual(pedidoId) {
     try {
-        const { data: pedido } = await supabaseClient
+        const { data: pedido } = await supabase
             .from('pedidos')
             .select('*')
             .eq('id', pedidoId)
             .single();
 
-        const { data: detalles } = await supabaseClient
+        const { data: detalles } = await supabase
             .from('pedido_items')
             .select('*')
             .eq('pedido_id', pedidoId);
@@ -386,13 +385,13 @@ async function exportarPedidoActual(pedidoId) {
             datos.push([
                 item.nombre,
                 item.cantidad,
-                'S/ ' + item.precio.toFixed(2),
-                'S/ ' + subtotal.toFixed(2)
+                `S/ ${item.precio.toFixed(2)}`,
+                `S/ ${subtotal.toFixed(2)}`
             ]);
         });
 
         datos.push([]);
-        datos.push(['', '', 'TOTAL A PAGAR:', 'S/ ' + pedido.total.toFixed(2)]);
+        datos.push(['', '', 'TOTAL A PAGAR:', `S/ ${pedido.total.toFixed(2)}`]);
 
         const ws = XLSX.utils.aoa_to_sheet(datos);
         const wb = XLSX.utils.book_new();
@@ -400,44 +399,24 @@ async function exportarPedidoActual(pedidoId) {
 
         ws['!cols'] = [{ wch: 35 }, { wch: 12 }, { wch: 15 }, { wch: 15 }];
 
-        const nombreArchivo = 'Pedido_' + pedido.id + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
+        const nombreArchivo = `Pedido_${pedido.id}_${new Date().toISOString().split('T')[0]}.xlsx`;
         XLSX.writeFile(wb, nombreArchivo);
 
     } catch (error) {
-        console.error('Error al exportar pedido:', error);
+        console.error('❌ Error al exportar pedido:', error);
     }
 }
 
-// Manejar navegación con botones del navegador
-window.addEventListener('popstate', function(event) {
+// Manejar navegación con botones Atrás/Adelante
+window.addEventListener('popstate', (event) => {
     if (event.state) {
         if (event.state.vista === 'categorias') {
             seccionInicio.style.display = 'none';
             seccionCategorias.style.display = 'block';
             seccionProductos.style.display = 'none';
-            
-            const categorias = [...new Set(productos.map(p => p.presentacion))];
-            let html = '';
-            categorias.forEach(cat => {
-                const cantidad = productos.filter(p => p.presentacion === cat).length;
-                html += `
-                    <div class="categoria-card" onclick="verProductos('${cat}')">
-                        <h3>${cat}</h3>
-                        <p>${cantidad} productos</p>
-                    </div>
-                `;
-            });
-            listaCategorias.innerHTML = html;
-            
+            mostrarCategorias();
         } else if (event.state.vista === 'productos') {
-            categoriaActual = event.state.categoria;
-            seccionCategorias.style.display = 'none';
-            seccionProductos.style.display = 'block';
-            seccionInicio.style.display = 'none';
-            
-            document.getElementById('categoriaActualTitulo').textContent = event.state.categoria;
-            const productosFiltrados = productos.filter(p => p.presentacion === event.state.categoria);
-            renderizarProductos(productosFiltrados);
+            verProductos(event.state.categoria);
         }
     } else {
         seccionInicio.style.display = 'block';
