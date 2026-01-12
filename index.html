@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tienda NATURALEX</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Librería para exportar a Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
 </head>
 <body>
     <header>
@@ -33,7 +30,7 @@
 
     <!-- Sección Productos -->
     <section id="seccionProductos" style="display: none;">
-        <button onclick="history.back()" class="btn-volver">← Volver a Categorías</button>
+        <button onclick="volverACategorias()" class="btn-volver">← Volver a Categorías</button>
         <h2>Productos de <span id="categoriaActualTitulo"></span></h2>
         <div id="listaProductos"></div>
     </section>
@@ -71,6 +68,9 @@
         <div id="listaPedidos"></div>
     </section>
 
+    <!-- SCRIPTS AL FINAL -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
