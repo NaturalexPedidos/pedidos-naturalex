@@ -44,17 +44,37 @@ async function cargarProductos() {
 
 function renderizarFiltros() {
     const container = document.getElementById('categorias-filter');
-    let html = '<button class="filter-btn active" onclick="filterCategoria(null)">Todas</button>';
+    
+    const iconos = {
+        'CONCENTRADOS': '🧪',
+        'CAPSULAS': '💊',
+        'LSF': '☀️',
+        'Dr. Willphar': '⚕️',
+        'COLAGENOS': '💊',
+        'Nutricionales': '🥤',
+        'Jarabes': '🍯',
+        'Productos El Mana': '🌿',
+        'ESPECIALIDADES': '⭐',
+        'ESPECIALIDADES BOTICAS NATURISTAS': '🌟',
+        'EXTRACTO DE MORINGA CON CAMÚ CAMU': '🌿',
+        'EXTRACTO DE HEPALAB - AGRACEJO, BOLDO, COLA DE CABALLO Y CAMÚ CAMU': '🍃',
+        'JARABES': '🍯',
+        'DR WILLPHAR': '⚕️'
+    };
+    
+    let html = '<button class="filter-chip active" onclick="filterCategoria(null)">📋 Todas</button>';
 
     categorias.forEach((cat, index) => {
-        html += '<button class="filter-btn" onclick="filterCategoria(' + index + ')">' + cat + '</button>';
+        const icono = iconos[cat] || '📦';
+        const nombreCorto = cat.length > 25 ? cat.substring(0, 25) + '...' : cat;
+        html += '<button class="filter-chip" onclick="filterCategoria(' + index + ')" title="' + cat + '">' + icono + ' ' + nombreCorto + '</button>';
     });
 
     container.innerHTML = html;
 }
 
 function filterCategoria(index) {
-    const buttons = document.querySelectorAll('.filter-btn');
+    const buttons = document.querySelectorAll('.filter-chip');
     buttons.forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
 
