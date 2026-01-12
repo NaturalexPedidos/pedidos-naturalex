@@ -114,8 +114,14 @@ function renderizarProductos(prods) {
 
 function agregarAlCarrito(codigo) {
     const producto = productos.find(p => p.codigo == codigo);
+    
+    if (!producto) {
+        mostrarMensaje('Producto no encontrado', 'error');
+        return;
+    }
+    
     const cantidadInput = document.getElementById('cant-' + codigo);
-    const cantidad = parseInt(cantidadInput.value) || 1;
+    const cantidad = cantidadInput ? parseInt(cantidadInput.value) || 1 : 1;
 
     const existente = carrito.find(item => item.codigo == codigo);
 
