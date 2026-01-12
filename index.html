@@ -3,156 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Pedidos - NATURALEX</title>
+    <title>Tienda NATURALEX</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Librería para exportar a Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <header class="header">
-        <div class="header-content">
-            <h1>🌿 NATURALEX - Sistema de Pedidos</h1>
-            <button class="cart-button" onclick="toggleCart()">
-                🛒 Carrito (<span id="cart-count">0</span>)
-            </button>
-        </div>
+    <header>
+        <h1>🛒 NATURALEX - Tienda Online</h1>
+        <button onclick="verCarrito()" id="btnCarrito">
+            🛒 Carrito (<span id="contadorCarrito">0</span>)
+        </button>
     </header>
 
-    <main class="container">
-        <!-- Sección de Productos -->
-        <section id="productos-section">
-            <h2 style="text-align: center; margin-bottom: 30px; color: #333;">Selecciona una Categoría</h2>
-            <div id="categorias-grid"></div>
-            
-            <div id="productos-container" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 id="categoria-titulo" style="color: #667eea; font-size: 24px;"></h3>
-                    <button class="btn-volver" onclick="volverCategorias()">← Volver a Categorías</button>
-                </div>
-                <div id="productos-grid"></div>
+    <!-- Sección Inicio -->
+    <section id="seccionInicio">
+        <h2>Bienvenido a NATURALEX</h2>
+        <p>Tu tienda de productos naturales de calidad</p>
+        <button onclick="mostrarCategorias()" class="btn-primary">Ver Productos</button>
+    </section>
+
+    <!-- Sección Categorías -->
+    <section id="seccionCategorias" style="display: none;">
+        <h2>📦 Selecciona una Categoría</h2>
+        <div id="listaCategorias"></div>
+    </section>
+
+    <!-- Sección Productos -->
+    <section id="seccionProductos" style="display: none;">
+        <button onclick="history.back()" class="btn-volver">← Volver a Categorías</button>
+        <h2>Productos de <span id="categoriaActualTitulo"></span></h2>
+        <div id="listaProductos"></div>
+    </section>
+
+    <!-- Modal del Carrito -->
+    <div id="modalCarrito" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarCarrito()">&times;</span>
+            <h2>🛒 Tu Carrito</h2>
+            <div id="contenidoCarrito"></div>
+            <div class="total-carrito">
+                <h3>Total: S/ <span id="totalCarrito">0.00</span></h3>
             </div>
-        </section>
-
-        <!-- Carrito Lateral -->
-        <aside id="cart-sidebar">
-            <div class="cart-header">
-                <h2>Carrito de Compras</h2>
-                <button class="close-cart" onclick="toggleCart()">✕</button>
-            </div>
-            <div id="cart-items"></div>
-            <div class="cart-footer">
-                <button class="checkout-btn" onclick="showCheckout()">Proceder al Pedido</button>
-            </div>
-        </aside>
-
-        <!-- Formulario de Pedido -->
-        <section id="checkout-section" style="display: none;">
-            <h2>Datos del Pedido</h2>
-            <form id="pedido-form">
-                <div class="form-section">
-                    <h3>Información del Cliente</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="nombre_cliente">Nombre Completo *</label>
-                            <input type="text" id="nombre_cliente" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="nombre_botica">Nombre de la Botica (Opcional)</label>
-                            <input type="text" id="nombre_botica">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="dni_ruc">DNI o RUC *</label>
-                            <input type="text" id="dni_ruc" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="telefono">Teléfono *</label>
-                            <input type="tel" id="telefono" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email *</label>
-                        <input type="email" id="email" required>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <h3>Ubicación</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="departamento">Departamento *</label>
-                            <input type="text" id="departamento" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="provincia">Provincia *</label>
-                            <input type="text" id="provincia" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="distrito">Distrito *</label>
-                            <input type="text" id="distrito" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="direccion">Dirección / Referencia *</label>
-                            <input type="text" id="direccion" required>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <h3>Información de Pago</h3>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="tipo_comprobante">Tipo de Comprobante *</label>
-                            <select id="tipo_comprobante" required>
-                                <option value="">Seleccione...</option>
-                                <option value="Factura">Factura</option>
-                                <option value="Boleta">Boleta</option>
-                                <option value="Nota de Pedido">Nota de Pedido</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="forma_pago">Forma de Pago *</label>
-                            <select id="forma_pago" required onchange="toggleDiasCredito()">
-                                <option value="">Seleccione...</option>
-                                <option value="Contado">Contado</option>
-                                <option value="Crédito">Crédito</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group" id="dias_credito_group" style="display: none;">
-                        <label for="dias_credito">Días de Crédito *</label>
-                        <select id="dias_credito">
-                            <option value="">Seleccione...</option>
-                            <option value="10">10 días</option>
-                            <option value="15">15 días</option>
-                            <option value="20">20 días</option>
-                            <option value="25">25 días</option>
-                            <option value="30">30 días</option>
-                            <option value="40">40 días</option>
-                            <option value="60">60 días</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn-secondary" onclick="backToProducts()">Volver al Catálogo</button>
-                    <button type="submit" class="btn-primary">Enviar Pedido</button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Mensaje de Confirmación -->
-        <div id="mensaje" class="mensaje"></div>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2026 NATURALEX - Sistema de Pedidos</p>
+            <button onclick="mostrarFormularioPedido()" class="btn-checkout">Hacer Pedido</button>
         </div>
-    </footer>
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Formulario de Pedido -->
+    <div id="formularioPedido" style="display: none;">
+        <h2>📋 Completa tus datos</h2>
+        <form id="formDatosPedido">
+            <input type="text" id="inputCliente" placeholder="Nombre completo" required>
+            <input type="email" id="inputEmail" placeholder="Email" required>
+            <input type="tel" id="inputTelefono" placeholder="Teléfono" required>
+            <textarea id="inputDireccion" placeholder="Dirección de entrega" required></textarea>
+            <button type="submit" class="btn-primary">Confirmar Pedido</button>
+            <button type="button" onclick="cancelarPedido()" class="btn-secondary">Cancelar</button>
+        </form>
+    </div>
+
+    <!-- Sección Historial de Pedidos -->
+    <section id="seccionPedidos" style="margin-top: 50px;">
+        <h2>📋 Historial de Pedidos</h2>
+        <button onclick="exportarPedidosExcel()" class="btn-excel">📊 Descargar Reporte Excel</button>
+        <div id="listaPedidos"></div>
+    </section>
+
     <script src="app.js"></script>
 </body>
 </html>
