@@ -84,7 +84,7 @@ function renderizarProductos(prods) {
         html += '<div class="producto-precio">S/ ' + parseFloat(p.precio).toFixed(2) + '</div>';
         html += '<div class="producto-actions">';
         html += '<input type="number" id="cant-' + p.codigo + '" value="1" min="1">';
-        html += '<button onclick="agregarAlCarrito(\'\'' + p.codigo + '\'\')">Agregar</button>';
+        html += '<button onclick="agregarAlCarrito(' + p.codigo + ')">Agregar</button>';
         html += '</div>';
         html += '</div>';
     });
@@ -93,11 +93,11 @@ function renderizarProductos(prods) {
 }
 
 function agregarAlCarrito(codigo) {
-    const producto = productos.find(p => p.codigo === codigo);
+    const producto = productos.find(p => p.codigo == codigo);
     const cantidadInput = document.getElementById('cant-' + codigo);
     const cantidad = parseInt(cantidadInput.value) || 1;
 
-    const existente = carrito.find(item => item.codigo === codigo);
+    const existente = carrito.find(item => item.codigo == codigo);
 
     if (existente) {
         existente.cantidad += cantidad;
