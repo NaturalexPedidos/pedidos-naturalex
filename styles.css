@@ -7,12 +7,16 @@
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #f5f5f5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
+    width: 100%;
 }
 
 /* ========== HEADER ========== */
@@ -73,53 +77,63 @@ body {
     font-weight: bold;
 }
 
-/* ========== FILTROS MEJORADOS - ESTILO CHIPS/PILLS ========== */
-#categorias-filter {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 20px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    border-radius: 15px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+/* ========== CATEGORÍAS GRID ========== */
+#categorias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 40px;
 }
 
-.filter-chip {
-    padding: 12px 24px;
-    border: 2px solid #e0e0e0;
+.categoria-card {
     background: white;
-    border-radius: 30px;
+    border-radius: 16px;
+    padding: 40px 24px;
+    text-align: center;
     cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 2px solid transparent;
+}
+
+.categoria-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
+}
+
+.categoria-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.categoria-nombre {
+    font-size: 20px;
+    font-weight: 700;
     color: #333;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+    margin-bottom: 8px;
 }
 
-.filter-chip:hover {
-    border-color: #4CAF50;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.25);
-    background: #f0fff4;
+.categoria-count {
+    color: #666;
+    font-size: 14px;
 }
 
-.filter-chip.active {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+/* ========== BOTÓN VOLVER ========== */
+.btn-volver {
+    background: #666;
     color: white;
-    border-color: #4CAF50;
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-    transform: translateY(-2px);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
 }
 
-.filter-chip.active:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(76, 175, 80, 0.5);
+.btn-volver:hover {
+    background: #555;
+    transform: translateX(-4px);
 }
 
 /* ========== PRODUCTOS GRID ========== */
@@ -142,17 +156,6 @@ body {
 .producto-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-
-.producto-categoria {
-    display: inline-block;
-    background: #667eea;
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 12px;
 }
 
 .producto-nombre {
@@ -336,13 +339,12 @@ body {
 
 /* ========== CHECKOUT SECTION ========== */
 #checkout-section {
-    display: none;
     background: white;
     border-radius: 12px;
     padding: 30px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
     max-width: 800px;
-    margin: 0 auto;
+    margin: 0 auto 40px auto;
 }
 
 #checkout-section h2 {
@@ -350,6 +352,16 @@ body {
     margin-bottom: 24px;
     font-size: 28px;
     text-align: center;
+}
+
+.form-section {
+    margin-bottom: 30px;
+}
+
+.form-section h3 {
+    color: #667eea;
+    margin-bottom: 16px;
+    font-size: 20px;
 }
 
 .form-group {
@@ -453,16 +465,36 @@ body {
     transform: translateX(0);
 }
 
+/* ========== FOOTER ========== */
+footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: auto;
+}
+
+footer p {
+    margin: 0;
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 768px) {
-    #categorias-filter {
-        padding: 15px;
-        gap: 8px;
+    #categorias-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 16px;
     }
-    
-    .filter-chip {
-        padding: 10px 18px;
-        font-size: 13px;
+
+    .categoria-card {
+        padding: 24px 16px;
+    }
+
+    .categoria-icon {
+        font-size: 48px;
+    }
+
+    .categoria-nombre {
+        font-size: 16px;
     }
 
     #productos-grid {
