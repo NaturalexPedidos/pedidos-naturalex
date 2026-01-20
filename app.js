@@ -829,5 +829,11 @@ $("btn_cargar")?.addEventListener("click", cargarPedidosAdmin);
 // Init
 // =====================
 ensureCartDrawerUI();
+// Logos (Supabase Storage: images/branding/*)
+const ln = $("logo_naturalex");
+if (ln) ln.src = publicImg("branding/naturalex.png") || "";
+
+const ls = $("logo_syf");
+if (ls) ls.src = publicImg("branding/syf.png") || "";
 cargarProductos();
 renderCarrito();
