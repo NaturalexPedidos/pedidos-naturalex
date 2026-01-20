@@ -829,11 +829,20 @@ $("btn_cargar")?.addEventListener("click", cargarPedidosAdmin);
 // Init
 // =====================
 ensureCartDrawerUI();
-// Logos (Supabase Storage: images/branding/*)
-const ln = $("logo_naturalex");
-if (ln) ln.src = publicImg("branding/naturalex.png") || "";
 
-const ls = $("logo_syf");
-if (ls) ls.src = publicImg("branding/syf.png") || "";
+// Logos (Supabase Storage bucket: images)
+const urlNaturalex = publicImg("branding/naturalex.png") || "";
+const urlSyf = publicImg("branding/syf.png") || "";
+
+// Header (solo Naturalex)
+const ln = $("logo_naturalex");
+if (ln) ln.src = urlNaturalex;
+
+// Footer (Naturalex + SYF)
+const lnf = $("logo_naturalex_footer");
+if (lnf) lnf.src = urlNaturalex;
+
+const lsf = $("logo_syf_footer");
+if (lsf) lsf.src = urlSyf;
 cargarProductos();
 renderCarrito();
