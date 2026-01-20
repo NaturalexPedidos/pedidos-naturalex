@@ -552,3 +552,19 @@ aside.card{
   padding: 8px 10px;
   cursor: pointer;
 }
+
+.brand{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.brand-text{ display:flex; flex-direction:column; }
+.brand-right{ display:flex; flex-direction:column; gap:6px; margin-left:6px; }
+.muted.mini{ font-size:12px; margin-top:0; }
+
+.logo{
+  display:block;
+  object-fit:contain;
+  border-radius:14px;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border);
+  padding:6px;
+}
+.logo.naturalex{ width:56px; height:56px; }
+.logo.syf{ width:88px; height:40px; padding:6px 8px; border-radius:12px; }
