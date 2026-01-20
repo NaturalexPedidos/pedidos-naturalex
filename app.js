@@ -39,7 +39,7 @@ function setHidden(el, hidden) {
 // =====================
 // Storage: imágenes (categorías)
 // =====================
-// Usa bucket público "images" y paths tipo "categories/mana.png". [web:7]
+// Usa bucket público "images" y paths tipo "categories/mana.png".
 function publicImg(path) {
   if (!path) return null;
   const { data } = db.storage.from("images").getPublicUrl(path);
@@ -512,16 +512,18 @@ function renderProductos(list) {
     left.appendChild(name);
     left.appendChild(meta);
 
-    // Controles +/− en el producto (sin bajar al carrito)
+    // Controles +/− en el producto (SIN botón "Agregar")
     const qty = document.createElement("div");
     qty.className = "qty";
     qty.style.flex = "0 0 auto";
 
     const dec = document.createElement("button");
     dec.textContent = "−";
+
     const val = document.createElement("div");
     val.className = "pill";
     val.textContent = String(carritoGetQty(p.id));
+
     const inc = document.createElement("button");
     inc.textContent = "+";
 
@@ -538,18 +540,8 @@ function renderProductos(list) {
     qty.appendChild(val);
     qty.appendChild(inc);
 
-    // Botón (se mantiene por si quieres)
-    const btn = document.createElement("button");
-    btn.className = "btn primary";
-    btn.textContent = "Agregar";
-    btn.onclick = () => {
-      carritoAdd(p);
-      val.textContent = String(carritoGetQty(p.id));
-    };
-
     card.appendChild(left);
     card.appendChild(qty);
-    card.appendChild(btn);
 
     cont.appendChild(card);
   });
