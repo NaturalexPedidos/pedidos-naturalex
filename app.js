@@ -396,6 +396,7 @@ function getCategoria(p) {
     // Excepciones: productos con categoría forzada
   if (codigo === 'PT-NPCA012') return 'CAPSULAS';
   if (codigo === 'PT-NPBA003') return 'ESPECIALIDADES';
+  if (codigo === '1111') return 'WILLPHAR';
   
   if (/^B\d+/.test(codigo) || nombre.includes("BROMKISAN") || nombre.includes("GENGI")) return "MANA";
   if (codigo.startsWith("PT-NPCO") || nombre.includes("COLAG")) return "COLAGENOS";
