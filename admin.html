@@ -4,26 +4,46 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin - Pedidos</title>
+  <link rel="stylesheet" href="./styles.css">
 </head>
+
 <body>
-  <h1>Admin</h1>
+  <div class="container">
+    <header class="topbar">
+      <div>
+        <h1>Admin</h1>
+        <div class="muted">Login + ver últimos pedidos</div>
+      </div>
+      <a class="link" href="./index.html">Volver</a>
+    </header>
 
-  <section>
-    <h2>Login</h2>
-    <input id="email" placeholder="Email" />
-    <input id="password" type="password" placeholder="Password" />
-    <button id="btn_login">Ingresar</button>
-    <button id="btn_logout">Salir</button>
-    <div id="auth_msg"></div>
-  </section>
+    <section class="card">
+      <h2>Login</h2>
+      <div class="form">
+        <input id="email" placeholder="Email" />
+        <input id="password" type="password" placeholder="Password" />
+        <button id="btn_login" class="btn primary" type="button">Ingresar</button>
+        <button id="btn_logout" class="btn secondary" type="button">Salir</button>
+      </div>
+      <div id="auth_msg" class="notice"></div>
+    </section>
 
-  <section>
-    <h2>Pedidos</h2>
-    <button id="btn_cargar">Cargar pedidos</button>
-    <pre id="pedidos"></pre>
-  </section>
+    <div class="spacer"></div>
 
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script type="module" src="./app.js"></script>
+    <section class="card">
+      <div class="section-title">
+        <h2>Pedidos</h2>
+        <div class="actions">
+          <button id="btn_cargar" class="btn primary" type="button">Cargar pedidos</button>
+        </div>
+      </div>
+
+      <div id="pedidos_cards" class="orders"></div>
+      <pre id="pedidos" class="hidden"></pre>
+    </section>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script type="module" src="./app.js"></script>
+  </div>
 </body>
 </html>
