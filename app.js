@@ -393,7 +393,10 @@ const CATEGORY_ORDER = [
 function getCategoria(p) {
   const nombre = (p.nombre || "").toUpperCase();
   const codigo = (p.codigo || "").toUpperCase().trim();
-
+    // Excepciones: productos con categoría forzada
+  if (codigo === 'PT-NPCA012') return 'CAPSULAS';
+  if (codigo === 'PT-NPBA003') return 'ESPECIALIDADES';
+  
   if (/^B\d+/.test(codigo) || nombre.includes("BROMKISAN") || nombre.includes("GENGI")) return "MANA";
   if (codigo.startsWith("PT-NPCO") || nombre.includes("COLAG")) return "COLAGENOS";
   if (codigo.startsWith("PT-NPCA") || nombre.includes(" CAPS")) return "CAPSULAS";
