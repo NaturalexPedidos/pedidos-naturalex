@@ -833,3 +833,12 @@ body{
 
 /* Texto del footer un poco más grande */
 .footer-info{ font-size: 15px !important; }
+
+/* Parche temporal: zoom a logos con mucho margen */
+#logo_naturalex,
+#logo_naturalex_footer,
+#logo_syf_footer{
+  transform: scale(2.2);
+  transform-origin: center;
+}
+
