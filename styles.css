@@ -878,3 +878,54 @@ main.grid{
   overflow: visible !important;
   padding: 10px 0 !important;
 }
+
+/* ===== Animaciones hover: categorías + productos ===== */
+
+/* Transiciones suaves (sin marear) */
+.category,
+.product{
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease !important;
+  will-change: transform;
+}
+
+/* Hover en tarjeta de categoría */
+.category:hover{
+  transform: translateY(-4px) scale(1.01) !important;
+  border-color: rgba(34,197,94,.55) !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.18) !important;
+}
+
+/* Animación de la imagen de categoría */
+.cat-img{
+  transition: transform .22s ease, filter .22s ease !important;
+  will-change: transform;
+}
+.category:hover .cat-img{
+  transform: scale(1.08) rotate(-1deg);
+  filter: saturate(1.12) contrast(1.06);
+}
+
+/* Hover en filas de producto */
+.product:hover{
+  transform: translateY(-2px) scale(1.005) !important;
+  border-color: rgba(34,197,94,.45) !important;
+  background: rgba(255,255,255,.05) !important;
+  box-shadow: 0 16px 36px rgba(0,0,0,.16) !important;
+}
+
+/* Opcional: botón “Agregar” reacciona al hover del producto */
+.product:hover .btn.primary{
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  transition: transform .18s ease, filter .18s ease;
+}
+
+/* Accesibilidad: si el usuario prefiere menos animación */
+@media (prefers-reduced-motion: reduce){
+  .category, .product, .cat-img{
+    transition: none !important;
+  }
+  .category:hover, .product:hover, .category:hover .cat-img{
+    transform: none !important;
+  }
+}
