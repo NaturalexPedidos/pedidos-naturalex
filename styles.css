@@ -773,3 +773,63 @@ body{
   border-radius: 0 !important;
   object-fit: contain !important;
 }
+
+/* ===== OVERRIDE FINAL: LOGOS MUCHO MÁS GRANDES ===== */
+
+/* Header centrado real */
+.topbar.topbar-center{
+  align-items: center !important;
+  margin-bottom: 28px !important;
+}
+
+/* “Truco” para centrar aunque exista Admin a la derecha */
+.topbar-left{ width: 220px !important; }
+.topbar-right{ width: 220px !important; display:flex !important; justify-content:flex-end !important; }
+
+.topbar-mid{
+  flex: 1 1 auto !important;
+  display:flex !important;
+  justify-content:center !important;
+  align-items:center !important;
+}
+
+/* Logo Naturalex arriba (GIGANTE) */
+#logo_naturalex{
+  width: min(720px, 96vw) !important;
+  height: 200px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  object-fit: contain !important;
+}
+
+/* Footer: centra y agranda */
+.site-footer{
+  padding: 28px 0 14px !important;
+}
+
+.footer-inner{
+  justify-content: center !important;
+  gap: 26px !important;
+}
+
+/* Logos del footer (MUCHO MÁS GRANDES) */
+#logo_naturalex_footer,
+#logo_syf_footer{
+  width: 240px !important;   /* sube a 280 si quieres */
+  height: 90px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  object-fit: contain !important;
+}
+
+/* Separador un poquito más grande */
+.footer-sep{
+  height: 60px !important;
+}
+
+/* Texto del footer un poco más grande */
+.footer-info{ font-size: 15px !important; }
