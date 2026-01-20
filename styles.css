@@ -1232,3 +1232,31 @@ main.grid{
 .cart-overlay.open{
   background: rgba(0,0,0,.3) !important;
 }
+
+/* ===== Admin flotante superior derecha ===== */
+.topbar-right{
+  position: fixed !important;
+  top: 18px !important;
+  right: 18px !important;
+  z-index: 10000 !important;
+  width: auto !important;
+}
+
+.topbar-right .link{
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  padding: 12px 18px !important;
+  background: linear-gradient(180deg, #22c55e, #16a34a) !important;
+  color: white !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  display: inline-block !important;
+  box-shadow: 0 8px 20px rgba(0,0,0,.15) !important;
+  transition: all .2s ease !important;
+}
+
+.topbar-right .link:hover{
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.22) !important;
+}
+
