@@ -1,21 +1,16 @@
-// app.js (GitHub Pages + Supabase)
-// Requiere en el HTML:
-// <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-// <script type="module" src="./app.js"></script>
-
 const { createClient } = supabase;
 
-// Tus datos (OK para frontend con RLS)
+// Supabase
 const SUPABASE_URL = "https://jhhejboarcscbjvufviz.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoaGVqYm9hcmNzY2JqdnVmdml6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4NjYwODAsImV4cCI6MjA4NDQ0MjA4MH0.oUHNvK-OHo4z-cJuPu-ADaZ7Q6Q5_Ocr6ofpYnvvDto";
 
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// -----------------------------
 // Helpers
-// -----------------------------
 const $ = (id) => document.getElementById(id);
+
+function safeText(s) { return (s ?? "").toString().trim(); }
 
 function money(n) {
   const x = Number(n || 0);
@@ -32,22 +27,18 @@ function setNotice(id, text, tone = "muted") {
     "var(--muted)";
 }
 
-function safeText(s) {
-  return (s ?? "").toString().trim();
+function setHidden(el, hidden) {
+  if (!el) return;
+  el.classList.toggle("hidden", !!hidden);
 }
 
-// -----------------------------
-// Estado (catálogo + carrito)
-// -----------------------------
-let productos = []; // cache
-let carrito = [];   // [{producto_id, nombre, precio, cantidad}]
+// =====================
+// Carrito
+// =====================
+let carrito = []; // [{producto_id, nombre, precio, cantidad}]
 
 function carritoTotal() {
   return carrito.reduce((acc, it) => acc + (Number(it.precio) * Number(it.cantidad)), 0);
-}
-
-function carritoCount() {
-  return carrito.reduce((acc, it) => acc + Number(it.cantidad), 0);
 }
 
 function carritoAdd(p) {
@@ -75,80 +66,13 @@ function carritoClear() {
   renderCarrito();
 }
 
-// -----------------------------
-// UI: Productos
-// -----------------------------
-function renderProductos(list) {
-  const cont = $("productos");
-  if (!cont) return;
-
-  cont.innerHTML = "";
-  list.forEach((p) => {
-    const card = document.createElement("div");
-    card.className = "product";
-
-    const name = document.createElement("div");
-    name.className = "name";
-    name.textContent = p.nombre;
-
-    const meta = document.createElement("div");
-    meta.className = "meta";
-
-    const code = document.createElement("span");
-    code.className = "pill";
-    code.textContent = p.codigo;
-
-    const price = document.createElement("span");
-    price.className = "pill";
-    price.textContent = money(p.precio);
-
-    meta.appendChild(code);
-    meta.appendChild(price);
-
-    const btn = document.createElement("button");
-    btn.className = "btn primary block";
-    btn.textContent = "Agregar al carrito";
-    btn.onclick = () => carritoAdd(p);
-
-    card.appendChild(name);
-    card.appendChild(meta);
-    card.appendChild(btn);
-
-    cont.appendChild(card);
-  });
-}
-
-async function cargarProductos() {
-  const cont = $("productos");
-  if (!cont) return; // estamos en admin.html
-
-  cont.textContent = "Cargando productos...";
-
-  const { data, error } = await db
-    .from("productos")
-    .select("id,codigo,nombre,precio,activo")
-    .eq("activo", true)
-    .order("nombre", { ascending: true });
-
-  if (error) {
-    cont.textContent = "Error: " + error.message;
-    return;
-  }
-
-  productos = data || [];
-  renderProductos(productos);
-}
-
-// -----------------------------
-// UI: Carrito
-// -----------------------------
 function renderCarrito() {
   const el = $("carrito_ui");
   const totalEl = $("total");
 
   if (totalEl) totalEl.textContent = money(carritoTotal());
+  if (!el) return;
 
-  if (!el) return; // admin.html
   el.innerHTML = "";
 
   if (carrito.length === 0) {
@@ -210,9 +134,190 @@ function renderCarrito() {
   });
 }
 
-// -----------------------------
-// Lógica formulario (crédito + doc)
-// -----------------------------
+// =====================
+// Categorías (TODAS) + orden custom
+// =====================
+let productos = [];       // activos
+let vista = "categorias"; // 'categorias' | 'productos'
+let categoriaActual = null;
+
+// Orden exacto que quieres + luego los demás
+const CATEGORY_ORDER = [
+  "MANA",
+  "COLAGENOS",
+  "CAPSULAS",
+  "LSF",
+  // el resto (si existen en tu lista)
+  "ESPECIALIDADES",
+  "ESPECIALIDADES BOTICAS NATURISTAS",
+  "CONCENTRADOS",
+  "EXTRACTOS",
+  "JARABES",
+  "WILLPHAR",
+  "OTROS",
+];
+
+// Detecta categoría SIN columna (por prefijo/código/nombre) basado en tu lista
+function getCategoria(p) {
+  const nombre = (p.nombre || "").toUpperCase();
+  const codigo = (p.codigo || "").toUpperCase().trim();
+
+  // MANA: B0001/B0002... (BROMKISAN/GENGI)
+  if (/^B\d+/.test(codigo) || nombre.includes("BROMKISAN") || nombre.includes("GENGI")) return "MANA";
+
+  // COLAGENOS: PT-NPCO...
+  if (codigo.startsWith("PT-NPCO") || nombre.includes("COLAG")) return "COLAGENOS";
+
+  // CAPSULAS: PT-NPCA...
+  if (codigo.startsWith("PT-NPCA") || nombre.includes(" CAPS")) return "CAPSULAS";
+
+  // LSF: PT-LPEF...
+  if (codigo.startsWith("PT-LPEF") || nombre.includes("EFERV") || nombre.includes("SACHET")) return "LSF";
+
+  // CONCENTRADOS: PT-NLEX...
+  if (codigo.startsWith("PT-NLEX") || nombre.includes("CONCENTRADO")) return "CONCENTRADOS";
+
+  // JARABES: PT-NLJA...
+  if (codigo.startsWith("PT-NLJA") || nombre.includes("JARABE")) return "JARABES";
+
+  // ESPECIALIDADES: PT-NPLE / PT-NPBA / PT-NPES (según tu lista)
+  if (codigo.startsWith("PT-NPLE") || codigo.startsWith("PT-NPBA") || codigo.startsWith("PT-NPES")) return "ESPECIALIDADES";
+
+  // ESPECIALIDADES BOTICAS NATURISTAS (proteínas)
+  if (nombre.includes("HEALTH PROTEIN") || nombre.includes("PROTEINA")) return "ESPECIALIDADES BOTICAS NATURISTAS";
+
+  // WILLPHAR (códigos numéricos 1090/1111/1112...)
+  if (/^\d{4}$/.test(codigo) || nombre.includes("WILLSURE") || nombre.includes("PALARTRIC")) return "WILLPHAR";
+
+  // EXTRACTOS (en tu lista son PT-NLEX021 etc; lo tratamos por palabra)
+  if (nombre.includes("EXTRACTO")) return "EXTRACTOS";
+
+  return "OTROS";
+}
+
+function sortCategorias(a, b) {
+  const ia = CATEGORY_ORDER.indexOf(a);
+  const ib = CATEGORY_ORDER.indexOf(b);
+
+  // primero los que están en la lista (en su orden)
+  if (ia !== -1 && ib !== -1) return ia - ib;
+  if (ia !== -1) return -1;
+  if (ib !== -1) return 1;
+
+  // luego alfabético
+  return a.localeCompare(b);
+}
+
+function mostrarCategorias() {
+  vista = "categorias";
+  categoriaActual = null;
+
+  const catsEl = $("categorias");
+  const prodEl = $("productos");
+  const btnVolver = $("btn_volver");
+  const busc = $("busqueda");
+  const titulo = $("titulo_catalogo");
+
+  if (titulo) titulo.textContent = "Categorías";
+  setHidden(btnVolver, true);
+  setHidden(busc, true);
+  setHidden(prodEl, true);
+  setHidden(catsEl, false);
+
+  // armar categorias reales desde productos
+  const counts = new Map();
+  productos.forEach(p => {
+    const c = getCategoria(p);
+    counts.set(c, (counts.get(c) || 0) + 1);
+  });
+
+  const categorias = Array.from(counts.keys()).sort(sortCategorias);
+
+  catsEl.innerHTML = "";
+  categorias.forEach((cat) => {
+    const card = document.createElement("div");
+    card.className = "category";
+    card.onclick = () => mostrarProductos(cat);
+
+    const t = document.createElement("div");
+    t.className = "title";
+    t.textContent = cat;
+
+    const d = document.createElement("div");
+    d.className = "desc";
+    d.textContent = `${counts.get(cat)} productos`;
+
+    card.appendChild(t);
+    card.appendChild(d);
+    catsEl.appendChild(card);
+  });
+}
+
+function renderProductos(list) {
+  const cont = $("productos");
+  if (!cont) return;
+
+  cont.innerHTML = "";
+  list.forEach((p) => {
+    const card = document.createElement("div");
+    card.className = "product";
+
+    const name = document.createElement("div");
+    name.className = "name";
+    name.textContent = p.nombre;
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+
+    const code = document.createElement("span");
+    code.className = "pill";
+    code.textContent = p.codigo || "-";
+
+    const price = document.createElement("span");
+    price.className = "pill";
+    price.textContent = money(p.precio);
+
+    meta.appendChild(code);
+    meta.appendChild(price);
+
+    const btn = document.createElement("button");
+    btn.className = "btn primary block";
+    btn.textContent = "Agregar al carrito";
+    btn.onclick = () => carritoAdd(p);
+
+    card.appendChild(name);
+    card.appendChild(meta);
+    card.appendChild(btn);
+
+    cont.appendChild(card);
+  });
+}
+
+function mostrarProductos(cat) {
+  vista = "productos";
+  categoriaActual = cat;
+
+  const catsEl = $("categorias");
+  const prodEl = $("productos");
+  const btnVolver = $("btn_volver");
+  const busc = $("busqueda");
+  const titulo = $("titulo_catalogo");
+
+  if (titulo) titulo.textContent = cat;
+  setHidden(btnVolver, false);
+  setHidden(busc, false);
+  setHidden(catsEl, true);
+  setHidden(prodEl, false);
+
+  if (busc) busc.value = "";
+
+  const list = productos.filter(p => getCategoria(p) === cat);
+  renderProductos(list);
+}
+
+// =====================
+// Form UX
+// =====================
 function setupFormUX() {
   const metodo = $("metodo_pago");
   const credito = $("credito_dias");
@@ -231,15 +336,14 @@ function setupFormUX() {
 
   if (comprobante && docTipo) {
     comprobante.addEventListener("change", () => {
-      // Si eligen factura, sugerimos RUC
       if (comprobante.value === "factura" && !docTipo.value) docTipo.value = "RUC";
     });
   }
 }
 
-// -----------------------------
-// Enviar pedido (INSERT)
-// -----------------------------
+// =====================
+// Enviar pedido
+// =====================
 async function enviarPedido() {
   if (!$("btn_enviar")) return;
 
@@ -275,7 +379,6 @@ async function enviarPedido() {
     estado: "nuevo",
   };
 
-  // Insert pedido
   const { data: pedido, error: e1 } = await db
     .from("pedidos")
     .insert(payload)
@@ -287,7 +390,6 @@ async function enviarPedido() {
     return;
   }
 
-  // Insert items
   const items = carrito.map((i) => ({
     pedido_id: pedido.id,
     producto_id: i.producto_id,
@@ -305,125 +407,52 @@ async function enviarPedido() {
   setNotice("msg", `Pedido enviado (#${pedido.id}).`, "ok");
 }
 
-// -----------------------------
-// Admin: Auth + pedidos
-// -----------------------------
-async function loginAdmin() {
-  if (!$("btn_login")) return;
+// =====================
+// Cargar productos desde Supabase
+// =====================
+async function cargarProductos() {
+  const catsEl = $("categorias");
+  const prodEl = $("productos");
+  if (!catsEl && !prodEl) return;
 
-  const email = safeText($("email")?.value);
-  const password = $("password")?.value || "";
-
-  if (!email || !password) {
-    setNotice("auth_msg", "Falta email o password.", "bad");
-    return;
-  }
-
-  const { error } = await db.auth.signInWithPassword({ email, password }); // v2 [web:400]
-  setNotice("auth_msg", error ? ("Error: " + error.message) : "OK: sesión iniciada.", error ? "bad" : "ok");
-}
-
-async function logoutAdmin() {
-  if (!$("btn_logout")) return;
-  await db.auth.signOut();
-  setNotice("auth_msg", "Sesión cerrada.", "ok");
-}
-
-function renderPedidosCards(list) {
-  const cont = $("pedidos_cards");
-  if (!cont) return;
-
-  cont.innerHTML = "";
-  if (!list?.length) {
-    const d = document.createElement("div");
-    d.className = "muted";
-    d.textContent = "No hay pedidos.";
-    cont.appendChild(d);
-    return;
-  }
-
-  list.forEach(p => {
-    const card = document.createElement("div");
-    card.className = "order";
-
-    const row1 = document.createElement("div");
-    row1.className = "row";
-    row1.innerHTML = `
-      <div class="id">#${p.id}</div>
-      <div class="pill">${p.estado || ""}</div>
-      <div class="muted">${p.created_at || ""}</div>
-    `;
-
-    const row2 = document.createElement("div");
-    row2.className = "row";
-    row2.innerHTML = `
-      <div><span class="muted">Cliente:</span> ${p.cliente_nombre || "-"}</div>
-      <div><span class="muted">Cel:</span> ${p.cliente_telefono || "-"}</div>
-    `;
-
-    const row3 = document.createElement("div");
-    row3.className = "row";
-    row3.innerHTML = `
-      <div><span class="muted">Doc:</span> ${p.doc_tipo || "-"} ${p.doc_numero || ""}</div>
-      <div><span class="muted">Botica:</span> ${p.botica_nombre || "-"}</div>
-    `;
-
-    const row4 = document.createElement("div");
-    row4.className = "row";
-    row4.innerHTML = `
-      <div><span class="muted">Ubicación:</span> ${p.ubicacion || "-"}</div>
-      <div><span class="muted">Pago:</span> ${p.metodo_pago || "-"} ${p.credito_dias ? `(${p.credito_dias} días)` : ""}</div>
-      <div><span class="muted">Comprobante:</span> ${p.comprobante || "-"}</div>
-    `;
-
-    card.appendChild(row1);
-    card.appendChild(row2);
-    card.appendChild(row3);
-    card.appendChild(row4);
-
-    cont.appendChild(card);
-  });
-}
-
-async function cargarPedidos() {
-  if (!$("btn_cargar")) return;
-
-  const out = $("pedidos_cards");
-  if (out) out.innerHTML = `<div class="muted">Cargando...</div>`;
+  if (catsEl) catsEl.textContent = "Cargando categorías...";
 
   const { data, error } = await db
-    .from("pedidos")
-    .select("id,created_at,cliente_nombre,cliente_telefono,doc_tipo,doc_numero,botica_nombre,ubicacion,metodo_pago,credito_dias,comprobante,estado")
-    .order("id", { ascending: false })
-    .limit(50);
+    .from("productos")
+    .select("id,codigo,nombre,precio,activo")
+    .eq("activo", true)
+    .order("nombre", { ascending: true });
 
   if (error) {
-    if (out) out.innerHTML = `<div class="muted">Error: ${error.message}</div>`;
+    if (catsEl) catsEl.textContent = "Error: " + error.message;
+    if (prodEl) prodEl.textContent = "Error: " + error.message;
     return;
   }
 
-  renderPedidosCards(data || []);
+  productos = data || [];
+  mostrarCategorias();
 }
 
-// -----------------------------
+// =====================
 // Wireup
-// -----------------------------
+// =====================
 $("btn_enviar")?.addEventListener("click", enviarPedido);
 $("btn_limpiar")?.addEventListener("click", carritoClear);
-
-$("btn_login")?.addEventListener("click", loginAdmin);
-$("btn_logout")?.addEventListener("click", logoutAdmin);
-$("btn_cargar")?.addEventListener("click", cargarPedidos);
+$("btn_volver")?.addEventListener("click", mostrarCategorias);
 
 $("busqueda")?.addEventListener("input", (e) => {
+  if (vista !== "productos") return;
   const q = safeText(e.target.value).toLowerCase();
-  const filtered = !q ? productos : productos.filter(p =>
+
+  const base = productos.filter(p => getCategoria(p) === categoriaActual);
+  const filtered = !q ? base : base.filter(p =>
     (p.nombre || "").toLowerCase().includes(q) || (p.codigo || "").toLowerCase().includes(q)
   );
+
   renderProductos(filtered);
 });
 
-// init (solo si existe el formulario)
+// init
 setupFormUX();
 cargarProductos();
 renderCarrito();
