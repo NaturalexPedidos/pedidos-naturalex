@@ -834,7 +834,7 @@ ensureCartDrawerUI();
 const urlNaturalex = publicImg("branding/naturalex.png") || "";
 const urlSyf = publicImg("branding/syf.png") || "";
 
-// Header (solo Naturalex)
+// Header (Naturalex grande centrado)
 const ln = $("logo_naturalex");
 if (ln) ln.src = urlNaturalex;
 
