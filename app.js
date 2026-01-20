@@ -702,36 +702,35 @@ async function adminLogout() {
 }
 
 async function cargarPedidosAdmin() {
-  if (!$("btn_cargar")) return;
-
   const out = $("pedidos");
   const cards = $("pedidos_cards");
 
+  // Limpiar
   if (cards) cards.innerHTML = "";
-  if (out) out.textContent = "";
+  if (out) {
+    out.textContent = "";
+    out.classList.add("hidden"); // <- IMPORTANTE: mantener oculto el JSON
+  }
 
   const { data: pedidos, error: e1 } = await db
     .from("pedidos")
     .select("*")
     .order("id", { ascending: false })
-    .limit(30);
+    .limit(50);
 
   if (e1) {
     if (cards) cards.textContent = "Error: " + e1.message;
-    if (out) out.textContent = "Error: " + e1.message;
     return;
   }
 
-  if (out) {
-    out.classList.remove("hidden");
-    out.textContent = JSON.stringify(pedidos, null, 2);
-  }
-
+  // Render cards bonitos
   if (cards) {
     pedidos.forEach(p => {
       const c = document.createElement("div");
       c.className = "card";
       c.style.marginTop = "10px";
+
+      const creado = p.created_at ? new Date(p.created_at).toLocaleString() : "";
 
       c.innerHTML = `
         <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
@@ -743,6 +742,9 @@ async function cargarPedidosAdmin() {
         </div>
         <div class="muted" style="margin-top:6px;">
           ${p.nota ? "Nota: " + p.nota : ""}
+        </div>
+        <div class="muted" style="margin-top:6px;">
+          ${creado}
         </div>
       `;
 
