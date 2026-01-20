@@ -705,12 +705,20 @@ async function cargarPedidosAdmin() {
   if (cards) cards.innerHTML = "";
   if (out) {
     out.textContent = "";
-    out.classList.add("hidden"); // no mostrar JSON
+    out.classList.add("hidden");
   }
 
+  // Traer pedidos CON sus items
   const { data: pedidos, error: e1 } = await db
     .from("pedidos")
-    .select("*")
+    .select(`
+      *,
+      pedido_items (
+        producto_id,
+        cantidad,
+        precio_unit
+      )
+    `)
     .order("id", { ascending: false })
     .limit(50);
 
@@ -720,6 +728,16 @@ async function cargarPedidosAdmin() {
   }
 
   if (!cards) return;
+
+  // Traer productos para mostrar nombres
+  const { data: allProds } = await db
+    .from("productos")
+    .select("id,nombre");
+
+  const prodsMap = new Map();
+  if (allProds) {
+    allProds.forEach(p => prodsMap.set(p.id, p.nombre));
+  }
 
   pedidos.forEach((p) => {
     const c = document.createElement("div");
@@ -731,49 +749,53 @@ async function cargarPedidosAdmin() {
     const tel = p.cliente_telefono || "-";
     const botica = p.botica_nombre || "-";
     const ub = p.ubicacion || "-";
-
     const docTipo = p.doc_tipo || "-";
     const docNum = p.doc_numero || "-";
-
     const metodo = p.metodo_pago || "-";
-    const credito = p.credito_dias == null ? "-" : String(p.credito_dias);
+    const credito = p.credito_dias !== null ? `${p.credito_dias}` : "-";
     const comp = p.comprobante || "-";
     const nota = p.nota || "-";
     const estado = p.estado || "-";
+
+    // ITEMS DEL PEDIDO
+    let itemsHTML = '<div class="muted" style="margin-top:10px;"><strong>Productos:</strong></div>';
+    
+    if (p.pedido_items && p.pedido_items.length > 0) {
+      itemsHTML += '<ul style="margin:6px 0;padding-left:18px;color:var(--text);">';
+      
+      p.pedido_items.forEach(it => {
+        const nombre = prodsMap.get(it.producto_id) || `ID ${it.producto_id}`;
+        const cant = it.cantidad;
+        const precio = it.precio_unit;
+        const subtotal = (cant * precio).toFixed(2);
+        
+        itemsHTML += `<li><strong>${nombre}</strong> × ${cant} — S/ ${precio} c/u = S/ ${subtotal}</li>`;
+      });
+      
+      itemsHTML += '</ul>';
+      
+      // Total del pedido
+      const total = p.pedido_items.reduce((sum, it) => sum + (it.cantidad * it.precio_unit), 0).toFixed(2);
+      itemsHTML += `<div style="margin-top:8px;font-weight:900;font-size:16px;">Total: S/ ${total}</div>`;
+    } else {
+      itemsHTML += '<div class="muted" style="margin-top:4px;">Sin productos</div>';
+    }
 
     c.innerHTML = `
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
         <div><strong>#${p.id}</strong> · ${botica} · ${cliente}</div>
         <div class="muted">${estado}</div>
       </div>
-
-      <div class="muted" style="margin-top:8px;">
-        <strong>Documento:</strong> ${docTipo} ${docNum}
-      </div>
-
-      <div class="muted" style="margin-top:6px;">
-        <strong>Tel:</strong> ${tel}
-      </div>
-
-      <div class="muted" style="margin-top:6px;">
-        <strong>Ubicación:</strong> ${ub}
-      </div>
-
-      <div class="muted" style="margin-top:6px;">
-        <strong>Pago:</strong> ${metodo} ${metodo === "credito" ? `(días: ${credito})` : ""}
-      </div>
-
-      <div class="muted" style="margin-top:6px;">
-        <strong>Comprobante:</strong> ${comp}
-      </div>
-
-      <div class="muted" style="margin-top:6px;">
-        <strong>Nota:</strong> ${nota}
-      </div>
-
-      <div class="muted" style="margin-top:6px;">
-        <strong>Fecha:</strong> ${creado}
-      </div>
+      
+      <div class="muted" style="margin-top:8px;"><strong>Documento:</strong> ${docTipo} ${docNum}</div>
+      <div class="muted" style="margin-top:6px;"><strong>Tel:</strong> ${tel}</div>
+      <div class="muted" style="margin-top:6px;"><strong>Ubicación:</strong> ${ub}</div>
+      <div class="muted" style="margin-top:6px;"><strong>Pago:</strong> ${metodo}${metodo === 'credito' ? ` (${credito} días)` : ''}</div>
+      <div class="muted" style="margin-top:6px;"><strong>Comprobante:</strong> ${comp}</div>
+      <div class="muted" style="margin-top:6px;"><strong>Nota:</strong> ${nota}</div>
+      <div class="muted" style="margin-top:6px;"><strong>Fecha:</strong> ${creado}</div>
+      
+      ${itemsHTML}
     `;
 
     cards.appendChild(c);
@@ -848,5 +870,6 @@ if (lnf) lnf.src = urlNaturalex;
 
 const lsf = $("logo_syf_footer");
 if (lsf) lsf.src = urlSyf;
+
 cargarProductos();
 renderCarrito();
