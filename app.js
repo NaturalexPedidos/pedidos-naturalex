@@ -709,7 +709,7 @@ async function cargarPedidosAdmin() {
   if (cards) cards.innerHTML = "";
   if (out) {
     out.textContent = "";
-    out.classList.add("hidden"); // <- IMPORTANTE: mantener oculto el JSON
+    out.classList.add("hidden"); // no mostrar JSON
   }
 
   const { data: pedidos, error: e1 } = await db
@@ -723,34 +723,65 @@ async function cargarPedidosAdmin() {
     return;
   }
 
-  // Render cards bonitos
-  if (cards) {
-    pedidos.forEach(p => {
-      const c = document.createElement("div");
-      c.className = "card";
-      c.style.marginTop = "10px";
+  if (!cards) return;
 
-      const creado = p.created_at ? new Date(p.created_at).toLocaleString() : "";
+  pedidos.forEach((p) => {
+    const c = document.createElement("div");
+    c.className = "card";
+    c.style.marginTop = "12px";
 
-      c.innerHTML = `
-        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-          <div><strong>#${p.id}</strong> · ${p.botica_nombre || "-"} · ${p.cliente_nombre || "-"}</div>
-          <div class="muted">${p.metodo_pago || "-"} · ${p.comprobante || "-"}</div>
-        </div>
-        <div class="muted" style="margin-top:8px;">
-          ${p.ubicacion || ""} ${p.cliente_telefono ? "· " + p.cliente_telefono : ""}
-        </div>
-        <div class="muted" style="margin-top:6px;">
-          ${p.nota ? "Nota: " + p.nota : ""}
-        </div>
-        <div class="muted" style="margin-top:6px;">
-          ${creado}
-        </div>
-      `;
+    const creado = p.created_at ? new Date(p.created_at).toLocaleString() : "-";
+    const cliente = p.cliente_nombre || "-";
+    const tel = p.cliente_telefono || "-";
+    const botica = p.botica_nombre || "-";
+    const ub = p.ubicacion || "-";
 
-      cards.appendChild(c);
-    });
-  }
+    const docTipo = p.doc_tipo || "-";
+    const docNum = p.doc_numero || "-";
+
+    const metodo = p.metodo_pago || "-";
+    const credito = p.credito_dias == null ? "-" : String(p.credito_dias);
+    const comp = p.comprobante || "-";
+    const nota = p.nota || "-";
+    const estado = p.estado || "-";
+
+    c.innerHTML = `
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div><strong>#${p.id}</strong> · ${botica} · ${cliente}</div>
+        <div class="muted">${estado}</div>
+      </div>
+
+      <div class="muted" style="margin-top:8px;">
+        <strong>Documento:</strong> ${docTipo} ${docNum}
+      </div>
+
+      <div class="muted" style="margin-top:6px;">
+        <strong>Tel:</strong> ${tel}
+      </div>
+
+      <div class="muted" style="margin-top:6px;">
+        <strong>Ubicación:</strong> ${ub}
+      </div>
+
+      <div class="muted" style="margin-top:6px;">
+        <strong>Pago:</strong> ${metodo} ${metodo === "credito" ? `(días: ${credito})` : ""}
+      </div>
+
+      <div class="muted" style="margin-top:6px;">
+        <strong>Comprobante:</strong> ${comp}
+      </div>
+
+      <div class="muted" style="margin-top:6px;">
+        <strong>Nota:</strong> ${nota}
+      </div>
+
+      <div class="muted" style="margin-top:6px;">
+        <strong>Fecha:</strong> ${creado}
+      </div>
+    `;
+
+    cards.appendChild(c);
+  });
 }
 
 // =====================
