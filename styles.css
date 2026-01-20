@@ -842,3 +842,39 @@ body{
   transform-origin: center;
 }
 
+/* ===== Fix: header/footer no se montan con el contenido ===== */
+
+/* Asegura que el header tenga altura real para el logo gigante */
+.topbar{
+  align-items: center !important;
+  padding: 10px 0 18px !important;
+}
+.topbar-mid{
+  min-height: 220px !important; /* debe ser >= height del logo */
+}
+
+/* Asegura que el main empiece debajo del header */
+main.grid{
+  margin-top: 12px !important;
+}
+
+/* Footer siempre debajo del contenido, sin montarse */
+.site-footer{
+  display: block !important;
+  clear: both !important;
+  margin-top: 40px !important;   /* separa del card de categorías */
+  position: static !important;   /* por si alguna regla lo puso fixed/absolute */
+  z-index: 0 !important;
+}
+
+/* Evita que el “zoom” con transform suba el footer hacia arriba */
+#logo_naturalex_footer,
+#logo_syf_footer{
+  display: inline-block !important;
+}
+
+/* Si estabas usando transform: scale(...) en logos, que no rompa el layout */
+.footer-logos{
+  overflow: visible !important;
+  padding: 10px 0 !important;
+}
