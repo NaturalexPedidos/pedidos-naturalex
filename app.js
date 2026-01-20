@@ -1,53 +1,123 @@
-// app.js
-// Requiere que el HTML tenga:
+// app.js (GitHub Pages + Supabase)
+// Requiere en el HTML:
 // <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 // <script type="module" src="./app.js"></script>
 
 const { createClient } = supabase;
 
+// Tus datos (OK para frontend con RLS)
 const SUPABASE_URL = "https://jhhejboarcscbjvufviz.supabase.co";
 const SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpoaGVqYm9hcmNzY2JqdnVmdml6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4NjYwODAsImV4cCI6MjA4NDQ0MjA4MH0.oUHNvK-OHo4z-cJuPu-ADaZ7Q6Q5_Ocr6ofpYnvvDto";
 
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --------------------
-// Carrito (solo navegador)
-// --------------------
-let carrito = []; // [{producto_id, nombre, precio, cantidad}]
+// -----------------------------
+// Helpers
+// -----------------------------
+const $ = (id) => document.getElementById(id);
 
-function $(id) {
-  return document.getElementById(id);
+function money(n) {
+  const x = Number(n || 0);
+  return `S/ ${x.toFixed(2)}`;
 }
 
-function setText(id, text) {
+function setNotice(id, text, tone = "muted") {
   const el = $(id);
-  if (el) el.textContent = text ?? "";
-}
-
-function renderCarrito() {
-  const el = $("carrito");
   if (!el) return;
-
-  const total = carrito.reduce((acc, it) => acc + it.precio * it.cantidad, 0);
-  el.textContent = JSON.stringify({ items: carrito, total }, null, 2);
+  el.textContent = text || "";
+  el.style.color =
+    tone === "ok" ? "var(--ok)" :
+    tone === "bad" ? "var(--danger)" :
+    "var(--muted)";
 }
 
-function addToCarrito(p) {
-  const item = carrito.find((x) => x.producto_id === p.id);
-  if (item) item.cantidad += 1;
+function safeText(s) {
+  return (s ?? "").toString().trim();
+}
+
+// -----------------------------
+// Estado (catálogo + carrito)
+// -----------------------------
+let productos = []; // cache
+let carrito = [];   // [{producto_id, nombre, precio, cantidad}]
+
+function carritoTotal() {
+  return carrito.reduce((acc, it) => acc + (Number(it.precio) * Number(it.cantidad)), 0);
+}
+
+function carritoCount() {
+  return carrito.reduce((acc, it) => acc + Number(it.cantidad), 0);
+}
+
+function carritoAdd(p) {
+  const it = carrito.find(x => x.producto_id === p.id);
+  if (it) it.cantidad += 1;
   else carrito.push({ producto_id: p.id, nombre: p.nombre, precio: p.precio, cantidad: 1 });
   renderCarrito();
 }
 
-function clearCarrito() {
+function carritoDec(producto_id) {
+  const it = carrito.find(x => x.producto_id === producto_id);
+  if (!it) return;
+  it.cantidad -= 1;
+  if (it.cantidad <= 0) carrito = carrito.filter(x => x.producto_id !== producto_id);
+  renderCarrito();
+}
+
+function carritoRemove(producto_id) {
+  carrito = carrito.filter(x => x.producto_id !== producto_id);
+  renderCarrito();
+}
+
+function carritoClear() {
   carrito = [];
   renderCarrito();
 }
 
-// --------------------
-// Público: cargar productos
-// --------------------
+// -----------------------------
+// UI: Productos
+// -----------------------------
+function renderProductos(list) {
+  const cont = $("productos");
+  if (!cont) return;
+
+  cont.innerHTML = "";
+  list.forEach((p) => {
+    const card = document.createElement("div");
+    card.className = "product";
+
+    const name = document.createElement("div");
+    name.className = "name";
+    name.textContent = p.nombre;
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+
+    const code = document.createElement("span");
+    code.className = "pill";
+    code.textContent = p.codigo;
+
+    const price = document.createElement("span");
+    price.className = "pill";
+    price.textContent = money(p.precio);
+
+    meta.appendChild(code);
+    meta.appendChild(price);
+
+    const btn = document.createElement("button");
+    btn.className = "btn primary block";
+    btn.textContent = "Agregar al carrito";
+    btn.onclick = () => carritoAdd(p);
+
+    card.appendChild(name);
+    card.appendChild(meta);
+    card.appendChild(btn);
+
+    cont.appendChild(card);
+  });
+}
+
 async function cargarProductos() {
   const cont = $("productos");
   if (!cont) return; // estamos en admin.html
@@ -65,68 +135,159 @@ async function cargarProductos() {
     return;
   }
 
-  cont.innerHTML = "";
-  data.forEach((p) => {
-    const row = document.createElement("div");
-    row.style.marginBottom = "8px";
-
-    const btn = document.createElement("button");
-    btn.textContent = `Agregar: ${p.nombre} (S/ ${p.precio})`;
-    btn.onclick = () => addToCarrito(p);
-
-    row.appendChild(btn);
-    cont.appendChild(row);
-  });
-
-  renderCarrito();
+  productos = data || [];
+  renderProductos(productos);
 }
 
-// --------------------
-// Público: enviar pedido (INSERT pedidos + pedido_items)
-// --------------------
-async function enviarPedido() {
-  const msgId = "msg";
-  if (!$("btn_enviar")) return;
+// -----------------------------
+// UI: Carrito
+// -----------------------------
+function renderCarrito() {
+  const el = $("carrito_ui");
+  const totalEl = $("total");
 
-  setText(msgId, "");
+  if (totalEl) totalEl.textContent = money(carritoTotal());
+
+  if (!el) return; // admin.html
+  el.innerHTML = "";
 
   if (carrito.length === 0) {
-    setText(msgId, "Carrito vacío.");
+    const empty = document.createElement("div");
+    empty.className = "muted";
+    empty.textContent = "Tu carrito está vacío.";
+    el.appendChild(empty);
     return;
   }
 
-  const metodo_pago = $("metodo_pago")?.value || null;
-  const credito_dias_raw = $("credito_dias")?.value || "";
-  const credito_dias = credito_dias_raw ? Number(credito_dias_raw) : null;
+  carrito.forEach((it) => {
+    const row = document.createElement("div");
+    row.className = "cart-item";
 
-  // Si es contado, fuerza credito_dias null (por tu CHECK)
+    const left = document.createElement("div");
+    left.className = "cart-left";
+
+    const title = document.createElement("div");
+    title.className = "title";
+    title.textContent = it.nombre;
+
+    const sub = document.createElement("div");
+    sub.className = "sub";
+    sub.textContent = `${money(it.precio)} · Subtotal: ${money(it.precio * it.cantidad)}`;
+
+    left.appendChild(title);
+    left.appendChild(sub);
+
+    const qty = document.createElement("div");
+    qty.className = "qty";
+
+    const dec = document.createElement("button");
+    dec.textContent = "−";
+    dec.onclick = () => carritoDec(it.producto_id);
+
+    const val = document.createElement("div");
+    val.className = "pill";
+    val.textContent = it.cantidad;
+
+    const inc = document.createElement("button");
+    inc.textContent = "+";
+    inc.onclick = () => carritoAdd({ id: it.producto_id, nombre: it.nombre, precio: it.precio });
+
+    const del = document.createElement("button");
+    del.textContent = "×";
+    del.className = "btn danger";
+    del.style.padding = "8px 10px";
+    del.onclick = () => carritoRemove(it.producto_id);
+
+    qty.appendChild(dec);
+    qty.appendChild(val);
+    qty.appendChild(inc);
+    qty.appendChild(del);
+
+    row.appendChild(left);
+    row.appendChild(qty);
+
+    el.appendChild(row);
+  });
+}
+
+// -----------------------------
+// Lógica formulario (crédito + doc)
+// -----------------------------
+function setupFormUX() {
+  const metodo = $("metodo_pago");
+  const credito = $("credito_dias");
+  const comprobante = $("comprobante");
+  const docTipo = $("doc_tipo");
+
+  if (metodo && credito) {
+    const sync = () => {
+      const isCredito = metodo.value === "credito";
+      credito.disabled = !isCredito;
+      if (!isCredito) credito.value = "";
+    };
+    metodo.addEventListener("change", sync);
+    sync();
+  }
+
+  if (comprobante && docTipo) {
+    comprobante.addEventListener("change", () => {
+      // Si eligen factura, sugerimos RUC
+      if (comprobante.value === "factura" && !docTipo.value) docTipo.value = "RUC";
+    });
+  }
+}
+
+// -----------------------------
+// Enviar pedido (INSERT)
+// -----------------------------
+async function enviarPedido() {
+  if (!$("btn_enviar")) return;
+
+  setNotice("msg", "");
+
+  if (carrito.length === 0) {
+    setNotice("msg", "Carrito vacío.", "bad");
+    return;
+  }
+
+  const doc_tipo = safeText($("doc_tipo")?.value).toUpperCase() || null;
+  const metodo_pago = safeText($("metodo_pago")?.value) || null;
+
+  const creditoRaw = safeText($("credito_dias")?.value);
+  const credito_dias = creditoRaw ? Number(creditoRaw) : null;
   const credito_dias_final = metodo_pago === "contado" ? null : credito_dias;
 
   const payload = {
-    cliente_nombre: $("cliente_nombre")?.value?.trim() || null,
-    cliente_telefono: $("cliente_telefono")?.value?.trim() || null,
+    doc_tipo,
+    doc_numero: safeText($("doc_numero")?.value) || null,
 
-    doc_tipo: $("doc_tipo")?.value?.trim() || null, // 'DNI' o 'RUC'
-    doc_numero: $("doc_numero")?.value?.trim() || null,
+    cliente_nombre: safeText($("cliente_nombre")?.value) || null,
+    cliente_telefono: safeText($("cliente_telefono")?.value) || null,
 
-    botica_nombre: $("botica_nombre")?.value?.trim() || null,
-    ubicacion: $("ubicacion")?.value?.trim() || null,
+    botica_nombre: safeText($("botica_nombre")?.value) || null,
+    ubicacion: safeText($("ubicacion")?.value) || null,
 
     metodo_pago,
     credito_dias: credito_dias_final,
-    comprobante: $("comprobante")?.value || null,
+    comprobante: safeText($("comprobante")?.value) || null,
 
+    nota: safeText($("nota")?.value) || null,
     estado: "nuevo",
   };
 
-  // 1) Insert pedido
-  const { data: pedido, error: e1 } = await db.from("pedidos").insert(payload).select("id").single();
+  // Insert pedido
+  const { data: pedido, error: e1 } = await db
+    .from("pedidos")
+    .insert(payload)
+    .select("id")
+    .single();
+
   if (e1) {
-    setText(msgId, "Error pedido: " + e1.message);
+    setNotice("msg", "Error pedido: " + e1.message, "bad");
     return;
   }
 
-  // 2) Insert items
+  // Insert items
   const items = carrito.map((i) => ({
     pedido_id: pedido.id,
     producto_id: i.producto_id,
@@ -136,66 +297,133 @@ async function enviarPedido() {
 
   const { error: e2 } = await db.from("pedido_items").insert(items);
   if (e2) {
-    setText(msgId, "Error items: " + e2.message);
+    setNotice("msg", "Error items: " + e2.message, "bad");
     return;
   }
 
-  clearCarrito();
-  setText(msgId, `Pedido enviado (#${pedido.id}).`);
+  carritoClear();
+  setNotice("msg", `Pedido enviado (#${pedido.id}).`, "ok");
 }
 
-// --------------------
-// Admin: Auth + listar pedidos
-// --------------------
+// -----------------------------
+// Admin: Auth + pedidos
+// -----------------------------
 async function loginAdmin() {
   if (!$("btn_login")) return;
 
-  const email = $("email")?.value?.trim();
-  const password = $("password")?.value;
+  const email = safeText($("email")?.value);
+  const password = $("password")?.value || "";
 
   if (!email || !password) {
-    setText("auth_msg", "Falta email o password.");
+    setNotice("auth_msg", "Falta email o password.", "bad");
     return;
   }
 
   const { error } = await db.auth.signInWithPassword({ email, password }); // v2 [web:400]
-  setText("auth_msg", error ? "Error: " + error.message : "OK: sesión iniciada.");
+  setNotice("auth_msg", error ? ("Error: " + error.message) : "OK: sesión iniciada.", error ? "bad" : "ok");
 }
 
 async function logoutAdmin() {
   if (!$("btn_logout")) return;
   await db.auth.signOut();
-  setText("auth_msg", "Sesión cerrada.");
+  setNotice("auth_msg", "Sesión cerrada.", "ok");
+}
+
+function renderPedidosCards(list) {
+  const cont = $("pedidos_cards");
+  if (!cont) return;
+
+  cont.innerHTML = "";
+  if (!list?.length) {
+    const d = document.createElement("div");
+    d.className = "muted";
+    d.textContent = "No hay pedidos.";
+    cont.appendChild(d);
+    return;
+  }
+
+  list.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "order";
+
+    const row1 = document.createElement("div");
+    row1.className = "row";
+    row1.innerHTML = `
+      <div class="id">#${p.id}</div>
+      <div class="pill">${p.estado || ""}</div>
+      <div class="muted">${p.created_at || ""}</div>
+    `;
+
+    const row2 = document.createElement("div");
+    row2.className = "row";
+    row2.innerHTML = `
+      <div><span class="muted">Cliente:</span> ${p.cliente_nombre || "-"}</div>
+      <div><span class="muted">Cel:</span> ${p.cliente_telefono || "-"}</div>
+    `;
+
+    const row3 = document.createElement("div");
+    row3.className = "row";
+    row3.innerHTML = `
+      <div><span class="muted">Doc:</span> ${p.doc_tipo || "-"} ${p.doc_numero || ""}</div>
+      <div><span class="muted">Botica:</span> ${p.botica_nombre || "-"}</div>
+    `;
+
+    const row4 = document.createElement("div");
+    row4.className = "row";
+    row4.innerHTML = `
+      <div><span class="muted">Ubicación:</span> ${p.ubicacion || "-"}</div>
+      <div><span class="muted">Pago:</span> ${p.metodo_pago || "-"} ${p.credito_dias ? `(${p.credito_dias} días)` : ""}</div>
+      <div><span class="muted">Comprobante:</span> ${p.comprobante || "-"}</div>
+    `;
+
+    card.appendChild(row1);
+    card.appendChild(row2);
+    card.appendChild(row3);
+    card.appendChild(row4);
+
+    cont.appendChild(card);
+  });
 }
 
 async function cargarPedidos() {
   if (!$("btn_cargar")) return;
 
-  setText("pedidos", "Cargando...");
+  const out = $("pedidos_cards");
+  if (out) out.innerHTML = `<div class="muted">Cargando...</div>`;
 
   const { data, error } = await db
     .from("pedidos")
     .select("id,created_at,cliente_nombre,cliente_telefono,doc_tipo,doc_numero,botica_nombre,ubicacion,metodo_pago,credito_dias,comprobante,estado")
     .order("id", { ascending: false })
-    .limit(100);
+    .limit(50);
 
   if (error) {
-    setText("pedidos", "Error: " + error.message);
+    if (out) out.innerHTML = `<div class="muted">Error: ${error.message}</div>`;
     return;
   }
 
-  setText("pedidos", JSON.stringify(data, null, 2));
+  renderPedidosCards(data || []);
 }
 
-// --------------------
-// Wireup (según la página)
-// --------------------
+// -----------------------------
+// Wireup
+// -----------------------------
 $("btn_enviar")?.addEventListener("click", enviarPedido);
+$("btn_limpiar")?.addEventListener("click", carritoClear);
 
 $("btn_login")?.addEventListener("click", loginAdmin);
 $("btn_logout")?.addEventListener("click", logoutAdmin);
 $("btn_cargar")?.addEventListener("click", cargarPedidos);
 
-// Auto-load productos si estamos en index.html
+$("busqueda")?.addEventListener("input", (e) => {
+  const q = safeText(e.target.value).toLowerCase();
+  const filtered = !q ? productos : productos.filter(p =>
+    (p.nombre || "").toLowerCase().includes(q) || (p.codigo || "").toLowerCase().includes(q)
+  );
+  renderProductos(filtered);
+});
+
+// init (solo si existe el formulario)
+setupFormUX();
 cargarProductos();
 renderCarrito();
