@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Pedidos</title>
+</head>
+<body>
+  <h1>Admin</h1>
+
+  <section>
+    <h2>Login</h2>
+    <input id="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <button id="btn_login">Ingresar</button>
+    <button id="btn_logout">Salir</button>
+    <div id="auth_msg"></div>
+  </section>
+
+  <section>
+    <h2>Pedidos</h2>
+    <button id="btn_cargar">Cargar pedidos</button>
+    <pre id="pedidos"></pre>
+  </section>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
