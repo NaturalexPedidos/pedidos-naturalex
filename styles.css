@@ -337,3 +337,36 @@ h2{ margin:0; font-size:18px; }
 
 /* Para que el texto no se vaya raro */
 .category .title{ margin-bottom: 4px; }
+
+/* ===== CATEGORÍAS MÁS GRANDES (override) ===== */
+
+/* Tarjetas más grandes */
+.category{
+  padding: 18px;
+  min-height: 120px;
+  gap: 16px;
+}
+
+/* Imagen más grande */
+.cat-img{
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  flex: 0 0 72px;
+}
+
+/* Texto un poco más grande */
+.category .title{
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+.category .desc{
+  font-size: 14px;
+}
+
+/* Opcional: un poco más de aire entre tarjetas */
+.category-grid{
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+
