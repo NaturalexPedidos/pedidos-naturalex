@@ -4,48 +4,87 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pedidos Naturalex</title>
+  <link rel="stylesheet" href="./styles.css">
 </head>
+
 <body>
-  <h1>Pedidos Naturalex</h1>
+  <div class="container">
+    <header class="topbar">
+      <div>
+        <h1>Pedidos Naturalex</h1>
+        <div class="muted">Catálogo + carrito + envío de pedido</div>
+      </div>
+      <a class="link" href="./admin.html">Admin</a>
+    </header>
 
-  <section>
-    <h2>Productos</h2>
-    <div id="productos"></div>
-  </section>
+    <main class="grid">
+      <section class="card">
+        <div class="section-title">
+          <h2>Productos</h2>
+          <input id="busqueda" class="search" placeholder="Buscar producto..." />
+        </div>
+        <div id="productos" class="product-grid"></div>
+      </section>
 
-  <section>
-    <h2>Carrito</h2>
-    <pre id="carrito"></pre>
-  </section>
+      <aside class="card">
+        <h2>Carrito</h2>
+        <div id="carrito_ui" class="cart"></div>
+        <div class="cart-footer">
+          <div class="muted">Total</div>
+          <div id="total" class="total">S/ 0.00</div>
+        </div>
+        <div class="actions">
+          <button id="btn_limpiar" class="btn secondary" type="button">Limpiar</button>
+        </div>
 
-  <section>
-    <h2>Datos del pedido</h2>
-    <input id="cliente_nombre" placeholder="Nombre" />
-    <input id="cliente_telefono" placeholder="Celular" />
-    <input id="doc_tipo" placeholder="DNI o RUC" />
-    <input id="doc_numero" placeholder="Número" />
-    <input id="botica_nombre" placeholder="Nombre de botica" />
-    <input id="ubicacion" placeholder="Ubicación" />
-    <select id="metodo_pago">
-      <option value="contado">Contado</option>
-      <option value="credito">Crédito</option>
-    </select>
-    <select id="credito_dias">
-      <option value="">(solo si crédito)</option>
-      <option value="10">10</option><option value="15">15</option><option value="20">20</option>
-      <option value="30">30</option><option value="40">40</option>
-    </select>
-    <select id="comprobante">
-      <option value="boleta">Boleta</option>
-      <option value="factura">Factura</option>
-      <option value="nota_pedido">Nota de pedido</option>
-    </select>
+        <div class="divider"></div>
 
-    <button id="btn_enviar">Enviar pedido</button>
-    <div id="msg"></div>
-  </section>
+        <h2>Datos del pedido</h2>
+        <div class="form">
+          <select id="doc_tipo">
+            <option value="">Documento</option>
+            <option value="DNI">DNI</option>
+            <option value="RUC">RUC</option>
+          </select>
+          <input id="doc_numero" placeholder="N° DNI/RUC" />
 
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  <script type="module" src="./app.js"></script>
+          <input id="cliente_nombre" placeholder="Nombre del cliente" />
+          <input id="cliente_telefono" placeholder="Celular" />
+
+          <input id="botica_nombre" placeholder="Nombre de botica" />
+          <input id="ubicacion" placeholder="Ubicación / Dirección" />
+
+          <select id="metodo_pago">
+            <option value="contado">Contado</option>
+            <option value="credito">Crédito</option>
+          </select>
+
+          <select id="credito_dias" disabled>
+            <option value="">Días de crédito</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="40">40</option>
+          </select>
+
+          <select id="comprobante">
+            <option value="boleta">Boleta</option>
+            <option value="factura">Factura</option>
+            <option value="nota_pedido">Nota de pedido</option>
+          </select>
+
+          <textarea id="nota" rows="2" placeholder="Nota (opcional)"></textarea>
+
+          <button id="btn_enviar" class="btn primary" type="button">Enviar pedido</button>
+        </div>
+
+        <div id="msg" class="notice"></div>
+      </aside>
+    </main>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script type="module" src="./app.js"></script>
+  </div>
 </body>
 </html>
