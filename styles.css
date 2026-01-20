@@ -642,3 +642,108 @@ body{
 .footer-line strong{
   color: var(--text);
 }
+
+/* =========================
+   AJUSTES: más grande + centrado
+   (pegar al final del styles.css)
+   ========================= */
+
+/* Layout más amplio y con más aire */
+.container{
+  width:min(1280px, 100%);
+  padding:28px 18px 90px;
+}
+
+.card{
+  padding:18px;
+  border-radius:18px;
+}
+
+/* Header centrado */
+.topbar-center{
+  align-items: center;
+  margin-bottom: 22px;
+}
+.topbar-mid{
+  flex: 1 1 auto;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+/* Logo principal (muy grande) */
+.logo-hero{
+  width: 280px;  /* sube a 320 si lo quieres aún más */
+  height: 96px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+}
+
+/* Categorías más grandes */
+.category-grid{
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 26px;
+}
+
+.category{
+  min-height: 180px;
+  padding: 24px;
+  gap: 18px;
+}
+
+.cat-img{
+  width: 130px;
+  height: 130px;
+  flex: 0 0 130px;
+  border-radius: 18px;
+}
+
+.category .title{ font-size: 20px; }
+.category .desc{ font-size: 16px; }
+
+/* Footer visible y bonito */
+.site-footer{
+  margin-top:22px;
+  border-top:1px solid var(--border);
+  padding:22px 0 10px;
+}
+
+.footer-inner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  flex-wrap:wrap;
+}
+
+.footer-logos{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.footer-sep{
+  width:1px;
+  height:34px;
+  background: var(--border);
+}
+
+.footer-logo{
+  width: 150px;
+  height: 56px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+}
+
+.footer-info{
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.footer-line strong{
+  color: var(--text);
+}
+
