@@ -307,3 +307,13 @@ h2{ margin:0; font-size:18px; }
 }
 
 ::placeholder{ color: rgba(234,240,255,.55); }
+/* Más aire entre tarjetas */
+.category-grid{ gap: 18px; }
+.product-grid{ gap: 16px; }
+
+/* Que no se “aplasten” las cards */
+.category{ min-height: 92px; }
+.product{ min-height: 175px; }
+
+/* Separación interna */
+.product{ padding: 14px; }
