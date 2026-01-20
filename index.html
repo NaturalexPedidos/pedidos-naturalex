@@ -3,22 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Pedidos Naturalex</title>
+  <title>Naturalex</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 
 <body>
   <div class="container">
-    <header class="topbar topbar-light">
-  <div class="topbar-left">
-    <img id="logo_naturalex" class="logo naturalex" alt="Naturalex" />
-  </div>
 
-  <div class="topbar-right">
-    <a class="link" href="admin.html">Admin</a>
-  </div>
-</header>
-    
+    <!-- HEADER: logo grande centrado + Admin a la derecha -->
+    <header class="topbar topbar-light topbar-center">
+      <div class="topbar-left"></div>
+
+      <div class="topbar-mid">
+        <img id="logo_naturalex" class="logo naturalex logo-hero" alt="Naturalex" />
+      </div>
+
+      <div class="topbar-right">
+        <a class="link" href="admin.html">Admin</a>
+      </div>
+    </header>
+
     <main class="grid">
       <!-- Catálogo -->
       <section class="card">
@@ -35,7 +39,7 @@
         <div id="productos" class="product-grid hidden"></div>
       </section>
 
-      <!-- Carrito + Datos -->
+      <!-- Carrito + Datos (queda por compatibilidad, pero tu CSS lo oculta) -->
       <aside class="card">
         <h2>Carrito</h2>
         <div id="carrito_ui" class="cart"></div>
@@ -95,80 +99,95 @@
       </aside>
     </main>
 
+    <!-- FOOTER: logos + datos -->
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-logos">
+          <img id="logo_naturalex_footer" class="logo naturalex footer-logo" alt="Naturalex" />
+          <div class="footer-sep"></div>
+          <img id="logo_syf_footer" class="logo syf footer-logo" alt="S&F Solar Group" />
+        </div>
+
+        <div class="footer-info">
+          <div class="footer-line"><strong>Dirección:</strong> CALLE LOS CHASQUIS 554 URB. ZARATE SJL.</div>
+          <div class="footer-line"><strong>Tel:</strong> 937233347</div>
+        </div>
+      </div>
+    </footer>
+
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script type="module" src="./app.js"></script>
   </div>
+
   <!-- FAB flotante -->
-<button id="cart_fab" class="cart-fab" type="button">
-  Carrito <span id="cart_badge" class="badge">0</span>
-</button>
+  <button id="cart_fab" class="cart-fab" type="button">
+    Carrito <span id="cart_badge" class="badge">0</span>
+  </button>
 
-<!-- Overlay + Drawer -->
-<div id="cart_overlay" class="cart-overlay"></div>
+  <!-- Overlay + Drawer -->
+  <div id="cart_overlay" class="cart-overlay"></div>
 
-<aside id="cart_drawer" class="cart-drawer" aria-hidden="true">
-  <div class="drawer-head">
-    <div class="drawer-title">Tu compra</div>
-    <button id="cart_close" class="drawer-close" type="button">Cerrar</button>
-  </div>
+  <aside id="cart_drawer" class="cart-drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div class="drawer-title">Tu compra</div>
+      <button id="cart_close" class="drawer-close" type="button">Cerrar</button>
+    </div>
 
-  <!-- aquí “inyectamos” el mismo contenido que ya tenías en el aside -->
-  <h2>Carrito</h2>
-  <div id="carrito_ui_drawer" class="cart"></div>
+    <h2>Carrito</h2>
+    <div id="carrito_ui_drawer" class="cart"></div>
 
-  <div class="cart-footer">
-    <div class="muted">Total</div>
-    <div id="total_drawer" class="total">S/ 0.00</div>
-  </div>
+    <div class="cart-footer">
+      <div class="muted">Total</div>
+      <div id="total_drawer" class="total">S/ 0.00</div>
+    </div>
 
-  <div class="actions">
-    <button id="btn_limpiar_drawer" class="btn secondary" type="button">Limpiar</button>
-  </div>
+    <div class="actions">
+      <button id="btn_limpiar_drawer" class="btn secondary" type="button">Limpiar</button>
+    </div>
 
-  <div class="divider"></div>
+    <div class="divider"></div>
 
-  <h2>Datos del pedido</h2>
-  <div class="form">
-    <!-- copiamos los mismos ids, pero con sufijo _drawer para no chocar -->
-    <select id="doc_tipo_drawer">
-      <option value="">Documento</option>
-      <option value="DNI">DNI</option>
-      <option value="RUC">RUC</option>
-    </select>
-    <input id="doc_numero_drawer" placeholder="N° DNI/RUC" />
+    <h2>Datos del pedido</h2>
+    <div class="form">
+      <select id="doc_tipo_drawer">
+        <option value="">Documento</option>
+        <option value="DNI">DNI</option>
+        <option value="RUC">RUC</option>
+      </select>
+      <input id="doc_numero_drawer" placeholder="N° DNI/RUC" />
 
-    <input id="cliente_nombre_drawer" placeholder="Nombre del cliente" />
-    <input id="cliente_telefono_drawer" placeholder="Celular" />
+      <input id="cliente_nombre_drawer" placeholder="Nombre del cliente" />
+      <input id="cliente_telefono_drawer" placeholder="Celular" />
 
-    <input id="botica_nombre_drawer" placeholder="Nombre de botica" />
-    <input id="ubicacion_drawer" placeholder="Ubicación / Dirección" />
+      <input id="botica_nombre_drawer" placeholder="Nombre de botica" />
+      <input id="ubicacion_drawer" placeholder="Ubicación / Dirección" />
 
-    <select id="metodo_pago_drawer">
-      <option value="contado">Contado</option>
-      <option value="credito">Crédito</option>
-    </select>
+      <select id="metodo_pago_drawer">
+        <option value="contado">Contado</option>
+        <option value="credito">Crédito</option>
+      </select>
 
-    <select id="credito_dias_drawer" disabled>
-      <option value="">Días de crédito</option>
-      <option value="10">10</option>
-      <option value="15">15</option>
-      <option value="20">20</option>
-      <option value="30">30</option>
-      <option value="40">40</option>
-    </select>
+      <select id="credito_dias_drawer" disabled>
+        <option value="">Días de crédito</option>
+        <option value="10">10</option>
+        <option value="15">15</option>
+        <option value="20">20</option>
+        <option value="30">30</option>
+        <option value="40">40</option>
+      </select>
 
-    <select id="comprobante_drawer">
-      <option value="boleta">Boleta</option>
-      <option value="factura">Factura</option>
-      <option value="nota_pedido">Nota de pedido</option>
-    </select>
+      <select id="comprobante_drawer">
+        <option value="boleta">Boleta</option>
+        <option value="factura">Factura</option>
+        <option value="nota_pedido">Nota de pedido</option>
+      </select>
 
-    <textarea id="nota_drawer" rows="2" placeholder="Nota (opcional)"></textarea>
+      <textarea id="nota_drawer" rows="2" placeholder="Nota (opcional)"></textarea>
 
-    <button id="btn_enviar_drawer" class="btn primary" type="button">Enviar pedido</button>
-  </div>
+      <button id="btn_enviar_drawer" class="btn primary" type="button">Enviar pedido</button>
+    </div>
 
-  <div id="msg_drawer" class="notice"></div>
-</aside>
+    <div id="msg_drawer" class="notice"></div>
+  </aside>
 </body>
 </html>
