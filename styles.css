@@ -747,3 +747,29 @@ body{
   color: var(--text);
 }
 
+/* ===== LOGO NATURALEX: gigante + centrado (override final) ===== */
+.topbar-center{
+  align-items:center !important;
+  margin-bottom: 22px;
+}
+
+.topbar-left{ width: 120px; }   /* “columna” vacía para centrar mejor */
+.topbar-right{ width: 120px; display:flex; justify-content:flex-end; }
+
+.topbar-mid{
+  flex: 1 1 auto;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+/* Este override gana a .logo.naturalex */
+.logo.naturalex.logo-hero{
+  width: min(520px, 92vw) !important;  /* bien grande y responsive */
+  height: 160px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  object-fit: contain !important;
+}
