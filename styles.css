@@ -317,3 +317,23 @@ h2{ margin:0; font-size:18px; }
 
 /* Separación interna */
 .product{ padding: 14px; }
+
+/* ===== IMÁGENES DE CATEGORÍAS ===== */
+.category{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.cat-img{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  object-fit:cover;
+  border:1px solid var(--border);
+  background: rgba(255,255,255,.05);
+  flex: 0 0 44px;
+}
+
+/* Para que el texto no se vaya raro */
+.category .title{ margin-bottom: 4px; }
