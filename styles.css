@@ -1106,3 +1106,129 @@ main.grid{
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== CARRITO DRAWER: COLORES CLAROS/PASTELES ===== */
+
+/* Fondo del drawer: verde menta muy claro */
+.cart-drawer{
+  background: linear-gradient(180deg, #f0fdf4, #e8f9f0) !important;
+  border-left: 1px solid rgba(34,197,94,.18) !important;
+  box-shadow: -18px 0 45px rgba(0,0,0,.12) !important;
+  color: #0f4a2d !important;  /* texto verde oscuro */
+}
+
+/* Títulos oscuros legibles */
+.cart-drawer h2,
+.cart-drawer .drawer-title{
+  color: #0f4a2d !important;
+}
+
+/* Botón cerrar con fondo claro */
+.cart-drawer .drawer-close{
+  background: rgba(34,197,94,.12) !important;
+  border: 1px solid rgba(34,197,94,.22) !important;
+  color: #16a34a !important;
+  font-weight: 900;
+}
+
+.cart-drawer .drawer-close:hover{
+  background: rgba(34,197,94,.18) !important;
+}
+
+/* Inputs y selects claros con borde verde suave */
+.cart-drawer .form input,
+.cart-drawer .form select,
+.cart-drawer .form textarea{
+  background: rgba(255,255,255,.85) !important;
+  border: 1px solid rgba(34,197,94,.25) !important;
+  color: #0f4a2d !important;
+}
+
+.cart-drawer .form input::placeholder,
+.cart-drawer .form textarea::placeholder{
+  color: rgba(15,74,45,.5) !important;
+}
+
+.cart-drawer .form input:focus,
+.cart-drawer .form select:focus,
+.cart-drawer .form textarea:focus{
+  border-color: rgba(34,197,94,.45) !important;
+  background: rgba(255,255,255,.95) !important;
+}
+
+/* Items del carrito: fondo blanco/crema */
+.cart-drawer .cart-item{
+  background: rgba(255,255,255,.7) !important;
+  border: 1px solid rgba(34,197,94,.2) !important;
+}
+
+.cart-drawer .cart-left .title{
+  color: #0f4a2d !important;
+}
+
+.cart-drawer .cart-left .sub{
+  color: #5f7b6f !important;
+}
+
+/* Botones de cantidad (+/-) */
+.cart-drawer .qty button{
+  background: rgba(34,197,94,.12) !important;
+  border: 1px solid rgba(34,197,94,.22) !important;
+  color: #16a34a !important;
+}
+
+.cart-drawer .qty button:hover{
+  background: rgba(34,197,94,.2) !important;
+}
+
+/* Total más visible */
+.cart-drawer .total{
+  color: #0f4a2d !important;
+  font-weight: 950;
+}
+
+.cart-drawer .muted{
+  color: #5f7b6f !important;
+}
+
+/* Divisor suave */
+.cart-drawer .divider{
+  background: rgba(34,197,94,.18) !important;
+}
+
+/* Botón "Limpiar" */
+.cart-drawer .btn.secondary{
+  background: rgba(255,79,109,.12) !important;
+  border: 1px solid rgba(255,79,109,.22) !important;
+  color: #b91c1c !important;
+}
+
+.cart-drawer .btn.secondary:hover{
+  background: rgba(255,79,109,.18) !important;
+}
+
+/* Botón "Enviar pedido": verde brillante */
+.cart-drawer .btn.primary{
+  background: linear-gradient(180deg, #22c55e, #16a34a) !important;
+  color: white !important;
+  font-weight: 950;
+}
+
+.cart-drawer .btn.primary:hover{
+  filter: brightness(1.08);
+}
+
+/* Mensaje de notificación */
+.cart-drawer .notice{
+  color: #5f7b6f !important;
+}
+
+/* Footer del carrito */
+.cart-drawer .cart-footer{
+  border-top: 1px solid rgba(34,197,94,.2) !important;
+}
+
+/* Overlay más suave */
+.cart-overlay.open{
+  background: rgba(0,0,0,.3) !important;
+}
