@@ -12,27 +12,37 @@
     <header class="topbar">
       <div>
         <h1>Pedidos Naturalex</h1>
-        <div class="muted">Catálogo + carrito + envío de pedido</div>
+        <div class="muted">Selecciona una categoría y arma tu pedido</div>
       </div>
       <a class="link" href="./admin.html">Admin</a>
     </header>
 
     <main class="grid">
+      <!-- Catálogo -->
       <section class="card">
         <div class="section-title">
-          <h2>Productos</h2>
-          <input id="busqueda" class="search" placeholder="Buscar producto..." />
+          <h2 id="titulo_catalogo">Categorías</h2>
+
+          <div class="actions">
+            <button id="btn_volver" class="btn secondary hidden" type="button">← Volver</button>
+            <input id="busqueda" class="search hidden" placeholder="Buscar en esta categoría..." />
+          </div>
         </div>
-        <div id="productos" class="product-grid"></div>
+
+        <div id="categorias" class="category-grid"></div>
+        <div id="productos" class="product-grid hidden"></div>
       </section>
 
+      <!-- Carrito + Datos -->
       <aside class="card">
         <h2>Carrito</h2>
         <div id="carrito_ui" class="cart"></div>
+
         <div class="cart-footer">
           <div class="muted">Total</div>
           <div id="total" class="total">S/ 0.00</div>
         </div>
+
         <div class="actions">
           <button id="btn_limpiar" class="btn secondary" type="button">Limpiar</button>
         </div>
