@@ -33,6 +33,39 @@ function setHidden(el, hidden) {
 }
 
 // =====================
+// Storage: imágenes
+// =====================
+// Usa bucket público "images" y paths tipo "categories/mana.png". [web:509]
+function publicImg(path) {
+  if (!path) return null;
+  const { data } = db.storage.from("images").getPublicUrl(path);
+  return data?.publicUrl || null;
+}
+
+function normalizeKey(s) {
+  return (s || "")
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replaceAll(" ", "_")
+    .replaceAll("á","a").replaceAll("é","e").replaceAll("í","i").replaceAll("ó","o").replaceAll("ú","u")
+    .replaceAll("ñ","n");
+}
+
+// Mapea categoría -> nombre de archivo en Storage
+function categoryImageFile(cat) {
+  const c = (cat || "").toUpperCase().trim();
+
+  // Si tú subiste nombres distintos, ajusta SOLO aquí:
+  if (c === "ESPECIALIDADES BOTICAS NATURISTAS") return "especialidades_boticas_naturistas.png";
+  if (c === "DR WILLPHAR") return "willphar.png"; // por si alguna vez usas este nombre
+  if (c === "WILLPHAR") return "willphar.png";
+
+  // default: "mana" -> "mana.png", "colagenos" -> "colagenos.png"
+  return `${normalizeKey(c)}.png`;
+}
+
+// =====================
 // Carrito
 // =====================
 let carrito = []; // [{producto_id, nombre, precio, cantidad}]
@@ -239,6 +272,17 @@ function mostrarCategorias() {
     card.className = "category";
     card.onclick = () => mostrarProductos(cat);
 
+    // IMAGEN categoría
+    const img = document.createElement("img");
+    img.className = "cat-img";
+    img.alt = cat;
+
+    const file = categoryImageFile(cat);
+    const url = publicImg(`categories/${file}`);
+    img.src = url || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect width='100%25' height='100%25' rx='12' fill='%230e1626'/%3E%3C/svg%3E";
+
+    const box = document.createElement("div");
+
     const t = document.createElement("div");
     t.className = "title";
     t.textContent = cat;
@@ -247,8 +291,11 @@ function mostrarCategorias() {
     d.className = "desc";
     d.textContent = `${counts.get(cat)} productos`;
 
-    card.appendChild(t);
-    card.appendChild(d);
+    box.appendChild(t);
+    box.appendChild(d);
+
+    card.appendChild(img);
+    card.appendChild(box);
     catsEl.appendChild(card);
   });
 }
@@ -408,6 +455,86 @@ async function enviarPedido() {
 }
 
 // =====================
+// Admin: login + cargar pedidos
+// =====================
+async function adminLogin() {
+  const email = safeText($("email")?.value);
+  const password = safeText($("password")?.value);
+
+  if (!email || !password) {
+    setNotice("auth_msg", "Completa email y password.", "bad");
+    return;
+  }
+
+  const { error } = await db.auth.signInWithPassword({ email, password });
+  if (error) {
+    setNotice("auth_msg", "Error login: " + error.message, "bad");
+    return;
+  }
+
+  setNotice("auth_msg", "Login OK.", "ok");
+}
+
+async function adminLogout() {
+  const { error } = await db.auth.signOut();
+  if (error) {
+    setNotice("auth_msg", "Error logout: " + error.message, "bad");
+    return;
+  }
+  setNotice("auth_msg", "Sesión cerrada.", "ok");
+}
+
+async function cargarPedidosAdmin() {
+  const out = $("pedidos");
+  const cards = $("pedidos_cards");
+
+  if (cards) cards.innerHTML = "";
+  if (out) out.textContent = "";
+
+  // Pedidos
+  const { data: pedidos, error: e1 } = await db
+    .from("pedidos")
+    .select("*")
+    .order("id", { ascending: false })
+    .limit(30);
+
+  if (e1) {
+    if (cards) cards.textContent = "Error: " + e1.message;
+    if (out) out.textContent = "Error: " + e1.message;
+    return;
+  }
+
+  if (out) {
+    out.classList.remove("hidden");
+    out.textContent = JSON.stringify(pedidos, null, 2);
+  }
+
+  // Render cards simples
+  if (cards) {
+    pedidos.forEach(p => {
+      const c = document.createElement("div");
+      c.className = "card";
+      c.style.marginTop = "10px";
+
+      c.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <div><strong>#${p.id}</strong> · ${p.botica_nombre || "-"} · ${p.cliente_nombre || "-"}</div>
+          <div class="muted">${p.metodo_pago || "-"} · ${p.comprobante || "-"}</div>
+        </div>
+        <div class="muted" style="margin-top:8px;">
+          ${p.ubicacion || ""} ${p.cliente_telefono ? "· " + p.cliente_telefono : ""}
+        </div>
+        <div class="muted" style="margin-top:6px;">
+          ${p.nota ? "Nota: " + p.nota : ""}
+        </div>
+      `;
+
+      cards.appendChild(c);
+    });
+  }
+}
+
+// =====================
 // Cargar productos desde Supabase
 // =====================
 async function cargarProductos() {
@@ -417,9 +544,10 @@ async function cargarProductos() {
 
   if (catsEl) catsEl.textContent = "Cargando categorías...";
 
+  // Trae también descripcion si existe (si no existe, no pasa nada si la BD lo permite)
   const { data, error } = await db
     .from("productos")
-    .select("id,codigo,nombre,precio,activo")
+    .select("id,codigo,nombre,precio,activo,descripcion")
     .eq("activo", true)
     .order("nombre", { ascending: true });
 
@@ -439,6 +567,10 @@ async function cargarProductos() {
 $("btn_enviar")?.addEventListener("click", enviarPedido);
 $("btn_limpiar")?.addEventListener("click", carritoClear);
 $("btn_volver")?.addEventListener("click", mostrarCategorias);
+
+$("btn_login")?.addEventListener("click", adminLogin);
+$("btn_logout")?.addEventListener("click", adminLogout);
+$("btn_cargar")?.addEventListener("click", cargarPedidosAdmin);
 
 $("busqueda")?.addEventListener("input", (e) => {
   if (vista !== "productos") return;
