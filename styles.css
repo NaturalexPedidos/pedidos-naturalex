@@ -943,10 +943,10 @@ aside.card{
   .footer-logos {
     flex-direction: row;
     gap: 20px;
-    padding: 16px 0;
+    padding: 20px 0;
     justify-content: center;
     align-items: center;
-    min-height: 100px;
+    min-height: 120px;
   }
 
   .footer-sep {
@@ -957,11 +957,12 @@ aside.card{
 
   #logo_naturalex_footer,
   #logo_syf_footer {
-    width: 240px;
-    height: 90px;
-    transform: none;
-    object-fit: contain;
-    max-width: none;
+    width: 240px !important;
+    height: 90px !important;
+    transform: scale(1.4) !important;
+    transform-origin: center !important;
+    object-fit: contain !important;
+    max-width: none !important;
   }
 
   .footer-info {
