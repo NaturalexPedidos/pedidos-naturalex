@@ -1006,3 +1006,21 @@ aside.card{
     display: block;
   }
 }
+
+/* Fix: Botón volver visible y clickeable */
+.section-title {
+  position: relative;
+  z-index: 1;
+}
+
+.section-title .actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  z-index: 2;
+}
+
+.section-title .btn {
+  z-index: 3;
+  position: relative;
+}
