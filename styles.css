@@ -941,25 +941,25 @@ aside.card{
   }
 
   .footer-logos {
-    flex-direction: row;
-    gap: 20px;
-    padding: 20px 0;
-    justify-content: center;
-    align-items: center;
-    min-height: 120px;
+    flex-direction: row !important;
+    gap: 30px !important;
+    padding: 20px 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: 120px !important;
   }
 
   .footer-sep {
-    width: 1px;
-    height: 45px;
-    display: block;
+    width: 1px !important;
+    height: 45px !important;
+    display: block !important;
   }
 
   #logo_naturalex_footer,
   #logo_syf_footer {
-    width: 240px !important;
-    height: 90px !important;
-    transform: scale(1.4) !important;
+    width: 200px !important;
+    height: 80px !important;
+    transform: scale(1.2) !important;
     transform-origin: center !important;
     object-fit: contain !important;
     max-width: none !important;
