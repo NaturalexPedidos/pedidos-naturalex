@@ -41,12 +41,13 @@ function setHidden(el, hidden) {
 // =====================
 const LS_LAST_ORDER_KEY = "naturalex_ultimo_pedido";
 
-function saveLastOrderReceipt({ id, total, items }) {
+function saveLastOrderReceipt({ id, total, items, detalles }) {
   try {
     const payload = {
       id,
       total: Number(total) || 0,
       items: Number(items) || 0,
+      detalles: detalles || [],
       fecha: new Date().toISOString(),
     };
     localStorage.setItem(LS_LAST_ORDER_KEY, JSON.stringify(payload));
@@ -185,61 +186,91 @@ function ensureCartDrawerUI() {
         <button id="cart_close" class="drawer-close" type="button">Cerrar</button>
       </div>
 
-      <h2>Carrito</h2>
-      <div id="carrito_ui_drawer" class="cart"></div>
+      <!-- Vista normal: carrito + formulario -->
+      <div id="cart_normal_view">
+        <h2>Carrito</h2>
+        <div id="carrito_ui_drawer" class="cart"></div>
 
-      <div class="cart-footer">
-        <div class="muted">Total</div>
-        <div id="total_drawer" class="total">S/ 0.00</div>
+        <div class="cart-footer">
+          <div class="muted">Total</div>
+          <div id="total_drawer" class="total">S/ 0.00</div>
+        </div>
+
+        <div class="actions">
+          <button id="btn_limpiar_drawer" class="btn secondary" type="button">Limpiar</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <h2>Datos del pedido</h2>
+        <div class="form">
+          <select id="doc_tipo_drawer">
+            <option value="">Documento</option>
+            <option value="DNI">DNI</option>
+            <option value="RUC">RUC</option>
+          </select>
+          <input id="doc_numero_drawer" placeholder="N° DNI/RUC" />
+
+          <input id="cliente_nombre_drawer" placeholder="Nombre del cliente" />
+          <input id="cliente_telefono_drawer" placeholder="Celular" />
+
+          <input id="botica_nombre_drawer" placeholder="Nombre de botica" />
+          <input id="ubicacion_drawer" placeholder="Ubicación / Dirección" />
+
+          <select id="metodo_pago_drawer">
+            <option value="contado">Contado</option>
+            <option value="credito">Crédito</option>
+          </select>
+
+          <select id="credito_dias_drawer" disabled>
+            <option value="">Días de crédito</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="40">40</option>
+          </select>
+
+          <select id="comprobante_drawer">
+            <option value="boleta">Boleta</option>
+            <option value="factura">Factura</option>
+            <option value="nota_pedido">Nota de pedido</option>
+          </select>
+
+          <textarea id="nota_drawer" rows="2" placeholder="Nota (opcional)"></textarea>
+
+          <button id="btn_enviar_drawer" class="btn primary" type="button">Enviar pedido</button>
+        </div>
+
+        <div id="msg_drawer" class="notice"></div>
       </div>
 
-      <div class="actions">
-        <button id="btn_limpiar_drawer" class="btn secondary" type="button">Limpiar</button>
+      <!-- Vista de comprobante (oculta por defecto) -->
+      <div id="cart_receipt_view" class="hidden">
+        <div class="receipt-success">
+          <div class="success-icon">✅</div>
+          <h2>Pedido enviado</h2>
+          <div class="receipt-number">N° <span id="receipt_id"></span></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <h3>Detalle del pedido</h3>
+        <div id="receipt_items" class="receipt-items"></div>
+
+        <div class="receipt-footer">
+          <div class="receipt-label">Total</div>
+          <div id="receipt_total" class="receipt-total">S/ 0.00</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="receipt-info" id="receipt_info"></div>
+
+        <div class="actions" style="margin-top:18px;">
+          <button id="btn_nuevo_pedido" class="btn primary block" type="button">Hacer nuevo pedido</button>
+        </div>
       </div>
-
-      <div class="divider"></div>
-
-      <h2>Datos del pedido</h2>
-      <div class="form">
-        <select id="doc_tipo_drawer">
-          <option value="">Documento</option>
-          <option value="DNI">DNI</option>
-          <option value="RUC">RUC</option>
-        </select>
-        <input id="doc_numero_drawer" placeholder="N° DNI/RUC" />
-
-        <input id="cliente_nombre_drawer" placeholder="Nombre del cliente" />
-        <input id="cliente_telefono_drawer" placeholder="Celular" />
-
-        <input id="botica_nombre_drawer" placeholder="Nombre de botica" />
-        <input id="ubicacion_drawer" placeholder="Ubicación / Dirección" />
-
-        <select id="metodo_pago_drawer">
-          <option value="contado">Contado</option>
-          <option value="credito">Crédito</option>
-        </select>
-
-        <select id="credito_dias_drawer" disabled>
-          <option value="">Días de crédito</option>
-          <option value="10">10</option>
-          <option value="15">15</option>
-          <option value="20">20</option>
-          <option value="30">30</option>
-          <option value="40">40</option>
-        </select>
-
-        <select id="comprobante_drawer">
-          <option value="boleta">Boleta</option>
-          <option value="factura">Factura</option>
-          <option value="nota_pedido">Nota de pedido</option>
-        </select>
-
-        <textarea id="nota_drawer" rows="2" placeholder="Nota (opcional)"></textarea>
-
-        <button id="btn_enviar_drawer" class="btn primary" type="button">Enviar pedido</button>
-      </div>
-
-      <div id="msg_drawer" class="notice"></div>
     `;
     document.body.appendChild(drawer);
   }
@@ -249,6 +280,7 @@ function ensureCartDrawerUI() {
   $("cart_overlay")?.addEventListener("click", closeCart);
   $("btn_limpiar_drawer")?.addEventListener("click", carritoClear);
   $("btn_enviar_drawer")?.addEventListener("click", enviarPedidoFromDrawer);
+  $("btn_nuevo_pedido")?.addEventListener("click", resetDrawerToNormal);
 
   setupFormUXDrawer();
 }
@@ -266,6 +298,46 @@ function closeCart() {
   $("cart_drawer")?.classList.remove("open");
   $("cart_drawer")?.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
+}
+
+function resetDrawerToNormal() {
+  setHidden($("cart_normal_view"), false);
+  setHidden($("cart_receipt_view"), true);
+  setNotice("msg_drawer", "");
+}
+
+function showReceiptView(pedidoData) {
+  setHidden($("cart_normal_view"), true);
+  setHidden($("cart_receipt_view"), false);
+
+  const { id, items, total, cliente, botica, ubicacion, metodoPago, comprobante } = pedidoData;
+
+  $("receipt_id").textContent = id;
+  $("receipt_total").textContent = money(total);
+
+  const itemsEl = $("receipt_items");
+  itemsEl.innerHTML = "";
+  items.forEach(it => {
+    const row = document.createElement("div");
+    row.className = "receipt-item";
+    row.innerHTML = `
+      <div class="receipt-item-name">${it.nombre}</div>
+      <div class="receipt-item-qty">× ${it.cantidad}</div>
+      <div class="receipt-item-price">${money(it.precio * it.cantidad)}</div>
+    `;
+    itemsEl.appendChild(row);
+  });
+
+  const infoEl = $("receipt_info");
+  infoEl.innerHTML = `
+    <div class="muted" style="font-size:13px;line-height:1.6;">
+      <strong>Cliente:</strong> ${cliente || "-"}<br>
+      <strong>Botica:</strong> ${botica || "-"}<br>
+      <strong>Ubicación:</strong> ${ubicacion || "-"}<br>
+      <strong>Pago:</strong> ${metodoPago || "-"}<br>
+      <strong>Comprobante:</strong> ${comprobante || "-"}
+    </div>
+  `;
 }
 
 // =====================
@@ -699,18 +771,35 @@ async function enviarPedidoFromDrawer() {
   const total = carritoTotal();
   const itemsCount = carritoCount();
 
+  const detalles = carrito.map(it => ({
+    nombre: it.nombre,
+    cantidad: it.cantidad,
+    precio: it.precio
+  }));
+
   saveLastOrderReceipt({
     id: pedido.id,
     total,
     items: itemsCount,
+    detalles
+  });
+
+  const metodoPagoTxt = metodo_pago === "credito" && credito_dias_final 
+    ? `${metodo_pago} (${credito_dias_final} días)` 
+    : metodo_pago;
+
+  showReceiptView({
+    id: pedido.id,
+    items: carrito,
+    total,
+    cliente: payload.cliente_nombre,
+    botica: payload.botica_nombre,
+    ubicacion: payload.ubicacion,
+    metodoPago: metodoPagoTxt,
+    comprobante: payload.comprobante
   });
 
   carritoClear();
-  setNotice(
-    "msg_drawer",
-    `Pedido enviado ✅  N° ${pedido.id}  (${itemsCount} items)  Total: ${money(total)}. Guarda este código.`,
-    "ok"
-  );
 }
 
 // =====================
