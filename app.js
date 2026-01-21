@@ -37,9 +37,51 @@ function setHidden(el, hidden) {
 }
 
 // =====================
+// Constancia cliente (localStorage)
+// =====================
+const LS_LAST_ORDER_KEY = "naturalex_ultimo_pedido";
+
+function saveLastOrderReceipt({ id, total, items }) {
+  try {
+    const payload = {
+      id,
+      total: Number(total) || 0,
+      items: Number(items) || 0,
+      fecha: new Date().toISOString(),
+    };
+    localStorage.setItem(LS_LAST_ORDER_KEY, JSON.stringify(payload));
+  } catch (e) {}
+}
+
+function loadLastOrderReceipt() {
+  try {
+    const raw = localStorage.getItem(LS_LAST_ORDER_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw);
+    if (!p?.id) return null;
+    return p;
+  } catch (e) {
+    return null;
+  }
+}
+
+function showLastOrderMessageDrawer() {
+  const el = $("msg_drawer");
+  if (!el) return;
+
+  const p = loadLastOrderReceipt();
+  if (!p) return;
+
+  const fechaTxt = p.fecha ? new Date(p.fecha).toLocaleString() : "";
+  el.textContent =
+    `Último pedido: N° ${p.id} (Total: ${money(p.total)}).` +
+    (fechaTxt ? ` Fecha: ${fechaTxt}` : "");
+  el.style.color = "var(--muted)";
+}
+
+// =====================
 // Storage: imágenes (categorías)
 // =====================
-// Usa bucket público "images" y paths tipo "categories/mana.png".
 function publicImg(path) {
   if (!path) return null;
   const { data } = db.storage.from("images").getPublicUrl(path);
@@ -70,7 +112,7 @@ const SVG_FALLBACK =
 // =====================
 // Carrito (estado)
 // =====================
-let carrito = []; // [{producto_id, nombre, precio, cantidad}]
+let carrito = [];
 
 function carritoTotal() {
   return carrito.reduce((acc, it) => acc + (Number(it.precio) * Number(it.cantidad)), 0);
@@ -111,10 +153,9 @@ function carritoClear() {
 }
 
 // =====================
-// UI: Drawer + FAB (se inyecta sin cambiar HTML)
+// UI: Drawer + FAB
 // =====================
 function ensureCartDrawerUI() {
-  // Solo en index (no en admin)
   if (!$("categorias") && !$("productos")) return;
 
   if (!$("cart_fab")) {
@@ -203,7 +244,6 @@ function ensureCartDrawerUI() {
     document.body.appendChild(drawer);
   }
 
-  // Wireup drawer UI events
   $("cart_fab")?.addEventListener("click", openCart);
   $("cart_close")?.addEventListener("click", closeCart);
   $("cart_overlay")?.addEventListener("click", closeCart);
@@ -218,6 +258,7 @@ function openCart() {
   $("cart_drawer")?.classList.add("open");
   $("cart_drawer")?.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
+  showLastOrderMessageDrawer();
 }
 
 function closeCart() {
@@ -228,13 +269,11 @@ function closeCart() {
 }
 
 // =====================
-// Render carrito (izquierda original) + drawer
+// Render carrito
 // =====================
 function renderCarrito() {
-  // Actualiza drawer siempre
   renderCarritoDrawer();
 
-  // Si existe el carrito viejo (aside), también lo mantiene actualizado (por si lo dejas visible)
   const el = $("carrito_ui");
   const totalEl = $("total");
   if (totalEl) totalEl.textContent = money(carritoTotal());
@@ -370,10 +409,10 @@ function renderCarritoDrawer() {
 }
 
 // =====================
-// Catálogo: categorías + productos (con +/− en cada producto)
+// Catálogo
 // =====================
-let productos = [];       // activos
-let vista = "categorias"; // 'categorias' | 'productos'
+let productos = [];
+let vista = "categorias";
 let categoriaActual = null;
 
 const CATEGORY_ORDER = [
@@ -393,7 +432,7 @@ const CATEGORY_ORDER = [
 function getCategoria(p) {
   const nombre = (p.nombre || "").toUpperCase();
   const codigo = (p.codigo || "").toUpperCase().trim();
-    // Excepciones: productos con categoría forzada
+  
   if (codigo === 'PT-NPCA012') return 'CAPSULAS';
   if (codigo === 'PT-NPBA003') return 'ESPECIALIDADES';
   if (codigo === '1111') return 'WILLPHAR';
@@ -516,7 +555,6 @@ function renderProductos(list) {
     left.appendChild(name);
     left.appendChild(meta);
 
-    // Controles +/− en el producto (SIN botón "Agregar")
     const qty = document.createElement("div");
     qty.className = "qty";
     qty.style.flex = "0 0 auto";
@@ -576,7 +614,7 @@ function mostrarProductos(cat) {
 }
 
 // =====================
-// Form UX (drawer)
+// Form UX
 // =====================
 function setupFormUXDrawer() {
   const metodo = $("metodo_pago_drawer");
@@ -602,7 +640,7 @@ function setupFormUXDrawer() {
 }
 
 // =====================
-// Enviar pedido (desde drawer)
+// Enviar pedido
 // =====================
 async function enviarPedidoFromDrawer() {
   if (!$("btn_enviar_drawer")) return;
@@ -658,13 +696,25 @@ async function enviarPedidoFromDrawer() {
     return;
   }
 
+  const total = carritoTotal();
+  const itemsCount = carritoCount();
+
+  saveLastOrderReceipt({
+    id: pedido.id,
+    total,
+    items: itemsCount,
+  });
+
   carritoClear();
-  setNotice("msg_drawer", `Pedido enviado (#${pedido.id}).`, "ok");
-  closeCart();
+  setNotice(
+    "msg_drawer",
+    `Pedido enviado ✅  N° ${pedido.id}  (${itemsCount} items)  Total: ${money(total)}. Guarda este código.`,
+    "ok"
+  );
 }
 
 // =====================
-// Admin: login + cargar pedidos
+// Admin
 // =====================
 async function adminLogin() {
   if (!$("btn_login")) return;
@@ -701,14 +751,12 @@ async function cargarPedidosAdmin() {
   const out = $("pedidos");
   const cards = $("pedidos_cards");
 
-  // Limpiar
   if (cards) cards.innerHTML = "";
   if (out) {
     out.textContent = "";
     out.classList.add("hidden");
   }
 
-  // Traer pedidos CON sus items
   const { data: pedidos, error: e1 } = await db
     .from("pedidos")
     .select(`
@@ -729,7 +777,6 @@ async function cargarPedidosAdmin() {
 
   if (!cards) return;
 
-  // Traer productos para mostrar nombres
   const { data: allProds } = await db
     .from("productos")
     .select("id,nombre");
@@ -757,7 +804,6 @@ async function cargarPedidosAdmin() {
     const nota = p.nota || "-";
     const estado = p.estado || "-";
 
-    // ITEMS DEL PEDIDO
     let itemsHTML = '<div class="muted" style="margin-top:10px;"><strong>Productos:</strong></div>';
     
     if (p.pedido_items && p.pedido_items.length > 0) {
@@ -774,7 +820,6 @@ async function cargarPedidosAdmin() {
       
       itemsHTML += '</ul>';
       
-      // Total del pedido
       const total = p.pedido_items.reduce((sum, it) => sum + (it.cantidad * it.precio_unit), 0).toFixed(2);
       itemsHTML += `<div style="margin-top:8px;font-weight:900;font-size:16px;">Total: S/ ${total}</div>`;
     } else {
@@ -803,7 +848,7 @@ async function cargarPedidosAdmin() {
 }
 
 // =====================
-// Cargar productos desde Supabase
+// Cargar productos
 // =====================
 async function cargarProductos() {
   const catsEl = $("categorias");
@@ -829,7 +874,7 @@ async function cargarProductos() {
 }
 
 // =====================
-// Wireup (index)
+// Wireup
 // =====================
 $("btn_limpiar")?.addEventListener("click", carritoClear);
 $("btn_volver")?.addEventListener("click", mostrarCategorias);
@@ -844,9 +889,6 @@ $("busqueda")?.addEventListener("input", (e) => {
   renderProductos(filtered);
 });
 
-// =====================
-// Wireup (admin)
-// =====================
 $("btn_login")?.addEventListener("click", adminLogin);
 $("btn_logout")?.addEventListener("click", adminLogout);
 $("btn_cargar")?.addEventListener("click", cargarPedidosAdmin);
@@ -856,15 +898,12 @@ $("btn_cargar")?.addEventListener("click", cargarPedidosAdmin);
 // =====================
 ensureCartDrawerUI();
 
-// Logos (Supabase Storage bucket: images)
 const urlNaturalex = publicImg("branding/naturalex.png") || "";
 const urlSyf = publicImg("branding/syf.png") || "";
 
-// Header (Naturalex grande centrado)
 const ln = $("logo_naturalex");
 if (ln) ln.src = urlNaturalex;
 
-// Footer (Naturalex + SYF)
 const lnf = $("logo_naturalex_footer");
 if (lnf) lnf.src = urlNaturalex;
 
