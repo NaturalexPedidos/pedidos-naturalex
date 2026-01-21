@@ -1342,26 +1342,29 @@ main.grid{
   border-radius: 10px;
 }
 
-/* ===== FIX MOBILE: sin espacios blancos ni scroll horizontal ===== */
+/* ===== MOBILE: limpio sin espacios y logos visibles ===== */
 @media (max-width: 768px) {
+  /* Evitar scroll horizontal */
   html, body {
     overflow-x: hidden !important;
     width: 100% !important;
     max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   body {
     background: #f5fbf7 !important;
-    background-attachment: fixed !important;
   }
 
   .container {
     width: 100% !important;
-    max-width: 100vw !important;
+    max-width: 100% !important;
     padding: 16px 12px 70px !important;
-    overflow-x: hidden !important;
+    box-sizing: border-box !important;
   }
 
+  /* Ocultar sidebar de marcas */
   .brands-sidebar {
     display: none !important;
   }
@@ -1380,71 +1383,88 @@ main.grid{
     width: 100% !important;
   }
 
-  /* Logo más chico y sin transform que rompe layout */
+  /* Header: logo limpio */
   .topbar {
-    padding: 8px 0 12px !important;
+    padding: 8px 0 14px !important;
+    margin-bottom: 12px !important;
   }
 
   .topbar-mid {
-    min-height: 100px !important;
+    min-height: 70px !important;
   }
 
   #logo_naturalex {
-    width: min(300px, 85vw) !important;
-    height: 80px !important;
+    width: min(280px, 80vw) !important;
+    height: 70px !important;
     transform: none !important;
+    object-fit: contain !important;
   }
 
-  /* Categorías responsive */
+  /* Categorías 1 columna */
   .category-grid {
     grid-template-columns: 1fr !important;
-    gap: 14px !important;
+    gap: 12px !important;
   }
 
   .category {
-    min-height: 110px !important;
-    padding: 14px !important;
+    min-height: 100px !important;
+    padding: 12px !important;
+    gap: 12px !important;
   }
 
   .cat-img {
-    width: 80px !important;
-    height: 80px !important;
-    flex: 0 0 80px !important;
+    width: 70px !important;
+    height: 70px !important;
+    flex: 0 0 70px !important;
   }
 
   .category .title {
-    font-size: 16px !important;
+    font-size: 15px !important;
+    margin-bottom: 2px !important;
   }
 
   .category .desc {
-    font-size: 13px !important;
+    font-size: 12px !important;
   }
 
-  /* Footer más compacto */
+  /* Footer: logos más grandes y legibles */
   .site-footer {
-    margin-top: 20px !important;
-    padding: 16px 0 10px !important;
+    margin-top: 18px !important;
+    padding: 14px 0 10px !important;
   }
 
   .footer-inner {
     flex-direction: column !important;
-    gap: 12px !important;
+    gap: 10px !important;
+    align-items: center !important;
   }
 
   .footer-logos {
-    flex-direction: column !important;
-    gap: 8px !important;
+    flex-direction: row !important;
+    gap: 14px !important;
+    padding: 8px 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
   }
 
   .footer-sep {
-    display: none !important;
+    width: 1px !important;
+    height: 45px !important;
+    display: block !important;
   }
 
+  /* Logos footer: más grandes */
   #logo_naturalex_footer,
   #logo_syf_footer {
     width: 160px !important;
     height: 60px !important;
     transform: none !important;
+    object-fit: contain !important;
+  }
+
+  .footer-info {
+    text-align: center !important;
+    font-size: 12px !important;
   }
 
   /* Botón flotante */
@@ -1461,8 +1481,14 @@ main.grid{
     font-size: 11px !important;
   }
 
-  /* Drawer responsive */
+  /* Drawer full width */
   .cart-drawer {
     width: 100vw !important;
+    max-width: 100vw !important;
+  }
+
+  /* Productos: mantener layout fila */
+  .product {
+    min-height: auto !important;
   }
 }
