@@ -891,15 +891,16 @@ aside.card{
   }
 
   .topbar-mid {
-    min-height: 110px;
+    min-height: 160px !important;
   }
 
   #logo_naturalex {
-    width: min(350px, 85vw);
-    height: 100px;
-    transform: none;
-    object-fit: contain;
-    max-width: none;
+    width: 90vw !important;
+    max-width: 450px !important;
+    height: 140px !important;
+    transform: scale(1.2) !important;
+    transform-origin: center !important;
+    object-fit: contain !important;
   }
 
   .category-grid {
