@@ -504,11 +504,11 @@ const CATEGORY_ORDER = [
 function getCategoria(p) {
   const nombre = (p.nombre || "").toUpperCase();
   const codigo = (p.codigo || "").toUpperCase().trim();
-  
+
   if (codigo === 'PT-NPCA012') return 'CAPSULAS';
   if (codigo === 'PT-NPBA003') return 'ESPECIALIDADES';
   if (codigo === '1111') return 'WILLPHAR';
-  
+
   if (/^B\d+/.test(codigo) || nombre.includes("BROMKISAN") || nombre.includes("GENGI")) return "MANA";
   if (codigo.startsWith("PT-NPCO") || nombre.includes("COLAG")) return "COLAGENOS";
   if (codigo.startsWith("PT-NPCA") || nombre.includes(" CAPS")) return "CAPSULAS";
@@ -529,6 +529,16 @@ function sortCategorias(a, b) {
   if (ia !== -1) return -1;
   if (ib !== -1) return 1;
   return a.localeCompare(b);
+}
+
+// =====================
+// NAVEGACIÓN MEJORADA
+// =====================
+function volverACategorias() {
+  mostrarCategorias();
+
+  const searchInput = $("busqueda");
+  if (searchInput) searchInput.value = "";
 }
 
 function mostrarCategorias() {
@@ -590,11 +600,36 @@ function mostrarCategorias() {
   });
 }
 
+function mostrarProductos(cat) {
+  vista = "productos";
+  categoriaActual = cat;
+
+  const catsEl = $("categorias");
+  const prodEl = $("productos");
+  const btnVolver = $("btn_volver");
+  const busc = $("busqueda");
+  const titulo = $("titulo_catalogo");
+
+  if (!catsEl || !prodEl) return;
+
+  if (titulo) titulo.textContent = cat;
+  setHidden(btnVolver, false);
+  setHidden(busc, false);
+  setHidden(catsEl, true);
+  setHidden(prodEl, false);
+
+  if (busc) busc.value = "";
+
+  const list = productos.filter(p => getCategoria(p) === cat);
+  renderProductos(list);
+}
+
 function renderProductos(list) {
   const cont = $("productos");
   if (!cont) return;
 
   cont.innerHTML = "";
+
   list.forEach((p) => {
     const card = document.createElement("div");
     card.className = "product";
@@ -659,30 +694,6 @@ function renderProductos(list) {
 
     cont.appendChild(card);
   });
-}
-
-function mostrarProductos(cat) {
-  vista = "productos";
-  categoriaActual = cat;
-
-  const catsEl = $("categorias");
-  const prodEl = $("productos");
-  const btnVolver = $("btn_volver");
-  const busc = $("busqueda");
-  const titulo = $("titulo_catalogo");
-
-  if (!catsEl || !prodEl) return;
-
-  if (titulo) titulo.textContent = cat;
-  setHidden(btnVolver, false);
-  setHidden(busc, false);
-  setHidden(catsEl, true);
-  setHidden(prodEl, false);
-
-  if (busc) busc.value = "";
-
-  const list = productos.filter(p => getCategoria(p) === cat);
-  renderProductos(list);
 }
 
 // =====================
@@ -894,21 +905,21 @@ async function cargarPedidosAdmin() {
     const estado = p.estado || "-";
 
     let itemsHTML = '<div class="muted" style="margin-top:10px;"><strong>Productos:</strong></div>';
-    
+
     if (p.pedido_items && p.pedido_items.length > 0) {
       itemsHTML += '<ul style="margin:6px 0;padding-left:18px;color:var(--text);">';
-      
+
       p.pedido_items.forEach(it => {
         const nombre = prodsMap.get(it.producto_id) || `ID ${it.producto_id}`;
         const cant = it.cantidad;
         const precio = it.precio_unit;
         const subtotal = (cant * precio).toFixed(2);
-        
+
         itemsHTML += `<li><strong>${nombre}</strong> × ${cant} — S/ ${precio} c/u = S/ ${subtotal}</li>`;
       });
-      
+
       itemsHTML += '</ul>';
-      
+
       const total = p.pedido_items.reduce((sum, it) => sum + (it.cantidad * it.precio_unit), 0).toFixed(2);
       itemsHTML += `<div style="margin-top:8px;font-weight:900;font-size:16px;">Total: S/ ${total}</div>`;
     } else {
@@ -920,7 +931,7 @@ async function cargarPedidosAdmin() {
         <div><strong>#${p.id}</strong> · ${botica} · ${cliente}</div>
         <div class="muted">${estado}</div>
       </div>
-      
+
       <div class="muted" style="margin-top:8px;"><strong>Documento:</strong> ${docTipo} ${docNum}</div>
       <div class="muted" style="margin-top:6px;"><strong>Tel:</strong> ${tel}</div>
       <div class="muted" style="margin-top:6px;"><strong>Ubicación:</strong> ${ub}</div>
@@ -928,7 +939,7 @@ async function cargarPedidosAdmin() {
       <div class="muted" style="margin-top:6px;"><strong>Comprobante:</strong> ${comp}</div>
       <div class="muted" style="margin-top:6px;"><strong>Nota:</strong> ${nota}</div>
       <div class="muted" style="margin-top:6px;"><strong>Fecha:</strong> ${creado}</div>
-      
+
       ${itemsHTML}
     `;
 
@@ -966,7 +977,7 @@ async function cargarProductos() {
 // Wireup
 // =====================
 $("btn_limpiar")?.addEventListener("click", carritoClear);
-$("btn_volver")?.addEventListener("click", mostrarCategorias);
+$("btn_volver")?.addEventListener("click", volverACategorias);
 
 $("busqueda")?.addEventListener("input", (e) => {
   if (vista !== "productos") return;
